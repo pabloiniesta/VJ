@@ -2,7 +2,7 @@
 #include <GL/glut.h>
 #include "Game.h"
 
-//HOLA
+//HOL1
 void Game::init()
 {
 	bPlay = true;
