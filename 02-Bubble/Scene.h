@@ -6,6 +6,8 @@
 #include "ShaderProgram.h"
 #include "TileMap.h"
 #include "Player.h"
+#include "Ball.h"
+
 
 
 // Scene contains all the entities of our game.
@@ -27,11 +29,14 @@ private:
 	void initShaders();
 
 private:
-	TileMap *map;
-	Player *player;
+	TileMap *map; //el mapa de tiles
+	Player *player; //el player
+	Ball *ball;  //la bola
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
+
+	bool touchBallToPlayer(const glm::ivec2& posPlayer, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizePlayer) const;
 
 };
 

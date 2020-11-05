@@ -8,8 +8,11 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 12 //Donde spawnea el muñeco
+#define INIT_PLAYER_X_TILES 12 //Donde spawnea el player
 #define INIT_PLAYER_Y_TILES 20
+
+#define INIT_BALL_X_TILES 12 //Donde spawnea el player
+#define INIT_BALL_Y_TILES 15
 
 
 Scene::Scene()
@@ -30,11 +33,22 @@ Scene::~Scene()
 void Scene::init()
 {
 	initShaders();
+	//cargar mapa con sus tiles
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+
+	//cargar player con sus coordenadas de pantalla y atributos
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
+
+	//cargar bola
+	ball = new Ball();
+	ball->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+	ball->setTileMap(map);
+
+
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
@@ -42,7 +56,21 @@ void Scene::init()
 void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
+	//actualizar player
 	player->update(deltaTime);
+	//actualizar bola
+	ball->update(deltaTime);
+
+
+	//mirar colisiones
+	if (ball->velY > 0) { // si la bola baja
+		if (touchBallToPlayer(player->posPlayer, ball->posBall, glm::ivec2(16, 16), glm::ivec2(32, 32))) { //miramos si le da al player
+			ball->velY *= -1; //si le ha dado cambiamos direccion
+		}
+	}
+
+	
+
 }
 
 void Scene::render()
@@ -55,8 +83,9 @@ void Scene::render()
 	modelview = glm::mat4(1.0f);
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
-	map->render();
-	player->render();
+	map->render(); //pintar mapa
+	player->render(); //pintar player
+	ball->render(); //pintar bola
 }
 
 void Scene::initShaders()
@@ -89,5 +118,25 @@ void Scene::initShaders()
 	fShader.free();
 }
 
+bool Scene::touchBallToPlayer(const glm::ivec2& posPlayer, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizePlayer) const
+{
+	int ybola, x0bola, x1bola;
+	int yplayer, x0player, x1player;
+
+
+	ybola = posBall.y + sizeBall.y; //cara de la derecha de la bola
+	x0bola = posBall.x; // Punto Y inicial de la bola
+	x1bola = posBall.x + sizeBall.x; // Punto Y final de la bola
+
+	yplayer = posPlayer.y; //contorno del player
+	x0player = posPlayer.x; // Punto Y inicial del player
+	x1player = posPlayer.x + sizePlayer.x; // Punto Y final del player
+
+	for (int x = x0bola; x <= x1bola; x++)
+	{
+		if (ybola >= yplayer && ybola < yplayer+5 && x >= x0player && x <= x1player) return true;
+	}
+	return false;
+}
 
 
