@@ -10,10 +10,6 @@
 const glm::ivec2 INITIAL_BALL_VELOCITY(3, 3); //vel de bola -> si X pos mov derecha
 											   // si Y es pos se va para abajo
 
-enum PlayerAnims
-{
-	IDDLE
-};
 
 
 void Ball::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)//tileMapPos es la x/y dnde spawneará

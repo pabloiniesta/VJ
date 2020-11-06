@@ -7,6 +7,7 @@
 #include "TileMap.h"
 #include "Player.h"
 #include "Ball.h"
+#include "Brick.h"
 
 
 
@@ -35,9 +36,10 @@ private:
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
+	vector<Brick> bricks;
 
 	bool touchBallToPlayer(const glm::ivec2& posPlayer, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizePlayer) const;
-
+	bool touchBallToBrick(const glm::ivec2& posBrick, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizeBrick) const;
 };
 
 
