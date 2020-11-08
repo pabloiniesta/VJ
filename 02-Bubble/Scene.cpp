@@ -77,26 +77,23 @@ void Scene::update(int deltaTime)
 	//actualizar bola
 	ball->update(deltaTime);
 
-	if (ball->posBall.y == 325) {
-		ball->isSticky = true;
-		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
-		ball->velBall.x = INITIAL_BALL_VELOCITY;
-		ball->velBall.y = INITIAL_BALL_VELOCITY;
-		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-	}
+
 	//mirar colision bola con player
 	if (ball->velBall.y > 0) { // si la bola baja
+		// NO TOCAR NADA A PARTIR DE AQUI O MUERTE
 		pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallPlayer(*ball, *player);
-		if (colision.first) { //la bola toca al player
+		if (colision.first) { //la bola toca al player. si actualizas la velY con un float el juego se muere, solo act velX en funcion de la colision
 			GLfloat centerBoard = player->posPlayer.x + player->sizePlayer.x / 2;
 			GLfloat distance = (ball->posBall.x + ball->radi) - centerBoard;
 			GLfloat percentage = distance / (player->sizePlayer.x / 2);
 			GLfloat strength = 2.f;
 			glm::vec2 oldVelocity = ball->velBall;
-			ball->velBall.x = INITIAL_BALL_VELOCITY * percentage * strength;
-			ball->velBall.y = INITIAL_BALL_VELOCITY * percentage * strength;
-
-			ball->velBall = glm::normalize(ball->velBall) * glm::length(oldVelocity); // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
+			glm::vec2 newVelocity;
+			newVelocity.x = INITIAL_BALL_VELOCITY * percentage * strength;
+			newVelocity.y = INITIAL_BALL_VELOCITY * percentage * strength;
+			newVelocity = glm::normalize(newVelocity) * glm::length(oldVelocity); // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
+			int x = (int)newVelocity.x;
+			ball->velBall.x = x;
 			ball->velBall.y = -1 * abs(ball->velBall.y);
 		}
 		
@@ -176,7 +173,7 @@ void Scene::initShaders()
 pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallObject(Ball& one, Brick& two) // AABB - Circle collision
 {
 	// Get center point circle first
-	glm::vec2 center(one.posBall + 8.f); //8 radio de bola
+	glm::vec2 center(one.posBall + 8); //8 radio de bola
 	// Calculate AABB info (center, half-extents)
 	glm::vec2 aabb_half_extents(two.sizeBrick.x / 2, two.sizeBrick.y / 2); //tamxladrillo tamyladrillo
 	glm::vec2 aabb_center(two.posBrick.x + aabb_half_extents.x, two.posBrick.y + aabb_half_extents.y);
@@ -197,7 +194,7 @@ pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallObject(Ball& on
 pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallPlayer(Ball& one, Player& two) // AABB - Circle collision
 {
 	// Get center point circle first
-	glm::vec2 center(one.posBall + 8.f); //8 radio de bola
+	glm::vec2 center(one.posBall + 8); //8 radio de bola
 	// Calculate AABB info (center, half-extents)
 	glm::vec2 aabb_half_extents(two.sizePlayer.x / 2, (two.sizePlayer.y / 5) / 2); //tatamaños player
 	glm::vec2 aabb_center(two.posPlayer.x + aabb_half_extents.x, two.posPlayer.y + aabb_half_extents.y);
