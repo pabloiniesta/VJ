@@ -1,6 +1,6 @@
 TILEMAP
 36 28 							-- Size of tile map in tiles
-16 32 							-- Tile size & block size
+16 32 							-- Tile size & block size tamaño componentes
 images/blocks.png 	-- Tilesheet
 2 2 								-- Number of tiles in tilesheet
 111111111111111111111111111111111111
@@ -12,12 +12,12 @@ images/blocks.png 	-- Tilesheet
 11                                11
 11                                11
 11                                11
-11b   b   b   b   b   b   b   b   11
-11  b   b   b   b   b   b   b   b 11
-11g   g   g   g   g   g   g   g   11
-11  g   g   g   g   g   g   g   g 11
-11r   r   r   r   r   r   r   r   11
-11  r   r   r   r   r   r   r   r 11
+11                                11
+11                                11
+11                                11
+11b b b b b b b b b b b b b b b b 11
+11g g g g g g g g g g g g g g g g 11
+11r r r r r r r r r r r r r r r r 11
 11                                11
 11                                11
 11                                11
@@ -30,5 +30,6 @@ images/blocks.png 	-- Tilesheet
 11                                11
 11                                11
 11                                11
-111111111111111111111111111111111111
-
+111111111111111111111111111111111111   
+                                                            
+                                    

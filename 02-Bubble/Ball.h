@@ -16,8 +16,10 @@ public:
 	void setTileMap(TileMap* tileMap);
 	void setPosition(const glm::vec2& pos);
  
-	int velX, velY;
-	glm::ivec2 posBall;
+	glm::vec2 velBall;
+	glm::vec2 posBall;
+	GLfloat radi;
+	bool isSticky;
 
 private:
 	glm::ivec2 tileMapDispl;

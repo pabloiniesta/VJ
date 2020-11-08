@@ -13,6 +13,12 @@
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
+enum Direction {
+	UP,
+	RIGHT,
+	DOWN,
+	LEFT
+};
 
 
 class Scene
@@ -38,8 +44,12 @@ private:
 	glm::mat4 projection;
 	vector<Brick> bricks;
 
-	bool touchBallToPlayer(const glm::ivec2& posPlayer, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizePlayer) const;
-	bool touchBallToBrick(const glm::ivec2& posBrick, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizeBrick) const;
+
+	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
+	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallPlayer(Ball& one, Player& two);//params-> colision?, Direction para dir colision, ivec2 = dist entre los 2
+
+																								
+	Direction VectorDirection(glm::vec2 target);
 };
 
 

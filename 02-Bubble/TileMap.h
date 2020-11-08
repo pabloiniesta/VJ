@@ -36,17 +36,18 @@ public:
 
 	
 	vector< pair<char, pair<int, int> > > brickInfo; //vector con los datos de un brick, char es el tipo (r g b) y su pos x y.
-	
+	glm::ivec2 mapSize;
 
 private:
 	bool loadLevel(const string &levelFile);
 	void prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program);
 
+
 private:
 	GLuint vao;
 	GLuint vbo;
 	GLint posLocation, texCoordLocation;
-	glm::ivec2 position, mapSize, tilesheetSize;
+	glm::ivec2 position, tilesheetSize;
 	int tileSize, blockSize;
 	Texture tilesheet;
 	glm::vec2 tileTexSize;

@@ -24,6 +24,7 @@ public:
 
 
 	glm::ivec2 posPlayer;
+	glm::ivec2 sizePlayer;
 	
 private:
 	glm::ivec2 tileMapDispl;
