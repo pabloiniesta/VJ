@@ -13,7 +13,9 @@
   <ItemGroup>
     <ClInclude Include="AnimKeyframes.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="Brick.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Ball.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Player.h" />
@@ -26,6 +28,7 @@
     <ClInclude Include="TileMap.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Brick.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="main.cpp" />
@@ -34,6 +37,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="Ball.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TexturedQuad.cpp" />
