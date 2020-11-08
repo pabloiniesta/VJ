@@ -17,8 +17,10 @@ public:
 	void setPosition(const glm::vec2& pos);
 
 	glm::ivec2 posBrick;
+	glm::ivec2 sizeBrick;
 	int hp;
 	int points;
+	char tipo;
 	
 	
 

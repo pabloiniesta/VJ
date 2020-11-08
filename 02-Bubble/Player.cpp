@@ -37,6 +37,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram) //
 		
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
+	sizePlayer = glm::ivec2(32, 32);
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	
 }
@@ -48,26 +49,26 @@ void Player::update(int deltaTime)
 	{
 		if (sprite->animation() != MOVE_LEFT)
 			sprite->changeAnimation(MOVE_LEFT);
-		posPlayer.x -= 2;
+		posPlayer.x -= 4;
 	    if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
 		{
-			posPlayer.x += 2;
+			posPlayer.x += 4;
 			sprite->changeAnimation(STAND);
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) //izq + arriba
 		{
-			posPlayer.y -= 2;
+			posPlayer.y -= 4;
 			if (map->collisionMoveUp(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.y += 2;
+				posPlayer.y += 4;
 			}
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) //izq + abajo
 		{
-			posPlayer.y += 2;
+			posPlayer.y += 4;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.y -= 2;
+				posPlayer.y -= 4;
 			}
 		}
 	}
@@ -75,26 +76,26 @@ void Player::update(int deltaTime)
 	{
 		if(sprite->animation() != MOVE_RIGHT)
 			sprite->changeAnimation(MOVE_RIGHT);
-		posPlayer.x += 2;
+		posPlayer.x += 4;
 		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
 		{
-			posPlayer.x -= 2;
+			posPlayer.x -= 4;
 			sprite->changeAnimation(STAND);
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) //der + arriba
 		{
-			posPlayer.y -= 2;
+			posPlayer.y -= 4;
 			if (map->collisionMoveUp(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.y += 2;
+				posPlayer.y += 4;
 			}
 		}
 		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) //der + abajo
 		{
-			posPlayer.y += 2;
+			posPlayer.y += 4;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.y -= 2;
+				posPlayer.y -= 4;
 			}
 		}
 	}
@@ -102,20 +103,20 @@ void Player::update(int deltaTime)
 	{
 		if (sprite->animation() != MOVE_UP)
 			sprite->changeAnimation(MOVE_UP);
-		posPlayer.y -= 2;
+		posPlayer.y -= 4;
 		if (map->collisionMoveUp(posPlayer, glm::ivec2(32, 32)))
 		{
-			posPlayer.y += 2;
+			posPlayer.y += 4;
 		}
 	}
 	else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) //mover abajo
 	{	
 		if (sprite->animation() != MOVE_DOWN)
 			sprite->changeAnimation(MOVE_DOWN);
-		posPlayer.y += 2;
+		posPlayer.y += 4;
 		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 32)))
 		{
-			posPlayer.y -= 2;
+			posPlayer.y -= 4;
 		}
 	}
 	else

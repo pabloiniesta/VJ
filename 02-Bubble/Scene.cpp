@@ -8,11 +8,13 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 12 //Donde spawnea el player
-#define INIT_PLAYER_Y_TILES 20
+#define INIT_PLAYER_X_TILES 17 //Donde spawnea el player
+#define INIT_PLAYER_Y_TILES 24
 
-#define INIT_BALL_X_TILES 12 //Donde spawnea el player
-#define INIT_BALL_Y_TILES 15
+#define INIT_BALL_X_TILES 17 //Donde spawnea la bola
+#define INIT_BALL_Y_TILES 23
+
+#define INITIAL_BALL_VELOCITY 3
 
 
 Scene::Scene()
@@ -48,6 +50,9 @@ void Scene::init()
 	ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 	ball->setTileMap(map);
 
+	
+
+	//cargar ladrillos
 	for (int i = 0; i < map->brickInfo.size(); i++) { //recorer vec con la info de cada brick para crearlo
 		pair<char, pair<int, int> > info = map->brickInfo[i];
 		char tipobrick = info.first;
@@ -58,6 +63,8 @@ void Scene::init()
 		brick->setPosition(glm::vec2(posBrickx * map->getTileSize(), posBricky * map->getTileSize())); //le damos su posicion en el mapa
 		bricks.push_back(*brick); //lo metemos en el vector de bricks
 	}
+
+
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
@@ -70,20 +77,45 @@ void Scene::update(int deltaTime)
 	//actualizar bola
 	ball->update(deltaTime);
 
-
-	//mirar colision bola con player
-	if (ball->velY > 0) { // si la bola baja
-		if (touchBallToPlayer(player->posPlayer, ball->posBall, glm::ivec2(16, 16), glm::ivec2(32, 32))) { //miramos si le da al player
-			ball->velY *= -1; //si le ha dado cambiamos direccion
-		}
+	if (ball->posBall.y == 325) {
+		ball->isSticky = true;
+		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+		ball->velBall.x = INITIAL_BALL_VELOCITY;
+		ball->velBall.y = INITIAL_BALL_VELOCITY;
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	}
+	//mirar colision bola con player
+	if (ball->velBall.y > 0) { // si la bola baja
+		pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallPlayer(*ball, *player);
+		if (colision.first) { //la bola toca al player
+			GLfloat centerBoard = player->posPlayer.x + player->sizePlayer.x / 2;
+			GLfloat distance = (ball->posBall.x + ball->radi) - centerBoard;
+			GLfloat percentage = distance / (player->sizePlayer.x / 2);
+			GLfloat strength = 2.f;
+			glm::vec2 oldVelocity = ball->velBall;
+			ball->velBall.x = INITIAL_BALL_VELOCITY * percentage * strength;
+			ball->velBall.y = INITIAL_BALL_VELOCITY * percentage * strength;
+
+			ball->velBall = glm::normalize(ball->velBall) * glm::length(oldVelocity); // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
+			ball->velBall.y = -1 * abs(ball->velBall.y);
+		}
+		
+	}
+
 	//mirar colision de ladrillos con bola
+	bool choque = false;
 	for (int i = 0; i < bricks.size();i++) {
 		if (bricks[i].hp > 0) { //si el brick esta vivo
-			if (touchBallToBrick(bricks[i].posBrick, ball->posBall, glm::ivec2(16, 16), glm::ivec2(32, 16))) {
+			pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallObject(*ball, bricks[i]);
+			if (colision.first) {
 				bricks[i].colision();
-				ball->velY *= -1;
+				if (choque == false) { //caso colision con doble ladrillo
+					if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+					else ball->velBall.y *= -1; //colision vertical
+					choque = true;
+				}
 			}
+			
 		}
 	}
 
@@ -139,41 +171,70 @@ void Scene::initShaders()
 	fShader.free();
 }
 
-bool Scene::touchBallToPlayer(const glm::ivec2& posPlayer, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizePlayer) const
+
+
+pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallObject(Ball& one, Brick& two) // AABB - Circle collision
 {
-	int ybola, x0bola, x1bola;
-	int yplayer, x0player, x1player;
+	// Get center point circle first
+	glm::vec2 center(one.posBall + 8.f); //8 radio de bola
+	// Calculate AABB info (center, half-extents)
+	glm::vec2 aabb_half_extents(two.sizeBrick.x / 2, two.sizeBrick.y / 2); //tamxladrillo tamyladrillo
+	glm::vec2 aabb_center(two.posBrick.x + aabb_half_extents.x, two.posBrick.y + aabb_half_extents.y);
+	// Get difference vector between both centers
+	glm::vec2 difference = center - aabb_center;
+	glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+	// Now that we know the the clamped values, add this to AABB_center and we get the value of box closest to circle
+	glm::vec2 closest = aabb_center + clamped;
+	// Now retrieve vector between center circle and closest point AABB and check if length < radius
+	difference = closest - center;
+
+	if (glm::length(difference) < 8) // not <= since in that case a collision also occurs when object one exactly touches object two, which they are at the end of each collision resolution stage.
+		return make_pair(GL_TRUE,make_pair(VectorDirection(difference), difference));
+	else
+		return make_pair(GL_FALSE, make_pair(UP, glm::vec2(0,0)));
+}
+
+pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallPlayer(Ball& one, Player& two) // AABB - Circle collision
+{
+	// Get center point circle first
+	glm::vec2 center(one.posBall + 8.f); //8 radio de bola
+	// Calculate AABB info (center, half-extents)
+	glm::vec2 aabb_half_extents(two.sizePlayer.x / 2, (two.sizePlayer.y / 5) / 2); //tatamaños player
+	glm::vec2 aabb_center(two.posPlayer.x + aabb_half_extents.x, two.posPlayer.y + aabb_half_extents.y);
+	// Get difference vector between both centers
+	glm::vec2 difference = center - aabb_center;
+	glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+	// Now that we know the the clamped values, add this to AABB_center and we get the value of box closest to circle
+	glm::vec2 closest = aabb_center + clamped;
+	// Now retrieve vector between center circle and closest point AABB and check if length < radius
+	difference = closest - center;
+
+	if (glm::length(difference) < 8) // not <= since in that case a collision also occurs when object one exactly touches object two, which they are at the end of each collision resolution stage.
+		return make_pair(GL_TRUE, make_pair(VectorDirection(difference), difference));
+	else
+		return make_pair(GL_FALSE, make_pair(UP, glm::vec2(0, 0)));
+}
 
 
-	ybola = posBall.y + sizeBall.y; //cara de abajo de la bola
-	x0bola = posBall.x; // Punto x inicial de la bola
-	x1bola = posBall.x + sizeBall.x; // Punto x final de la bola
 
-	yplayer = posPlayer.y; //contorno superior del player
-	x0player = posPlayer.x; // Punto x inicial del player
-	x1player = posPlayer.x + sizePlayer.x; // Punto x final del player
-
-	for (int x = x0bola; x <= x1bola; x++)
+Direction Scene::VectorDirection(glm::vec2 target)
+{
+	glm::vec2 compass[] = {
+		glm::vec2(0.0f, 1.0f),    // up
+		glm::vec2(1.0f, 0.0f),    // right
+		glm::vec2(0.0f, -1.0f),    // down
+		glm::vec2(-1.0f, 0.0f)    // left
+	};
+	GLfloat max = 0.0f;
+	GLuint best_match = -1;
+	for (GLuint i = 0; i < 4; i++)
 	{
-		if (ybola >= yplayer && ybola < yplayer+5 && x >= x0player && x <= x1player) return true;
+		GLfloat dot_product = glm::dot(glm::normalize(target), compass[i]);
+		if (dot_product > max)
+		{
+			max = dot_product;
+			best_match = i;
+		}
 	}
-	return false;
+	return (Direction)best_match;
 }
-
-bool Scene::touchBallToBrick(const glm::ivec2& posBrick, const glm::ivec2& posBall, const glm::ivec2& sizeBall, const glm::ivec2& sizeBrick) const
-{
-	//colision parte inferior del brick
-	int ybola = posBall.y; //parte superior de la bola
-	int x0bola = posBall.x; // Punto x inicial de la bola
-	int x1bola = posBall.x + sizeBall.x; // Punto x final de la bola
-
-	int ybrick = posBrick.y + sizeBrick.y; //parte inferior brick
-	int x0brick = posBrick.x; //punto x inicial brick
-	int x1brick = posBrick.x + sizeBrick.x; //punto x final brick
-	for (int x = x0bola; x <= x1bola; x++) {
-		if (ybola <= ybrick && ybola > ybrick - 5 && x >= x0brick && x <= x1brick) return true; //mirar si cuando la bola sube le da a algun brick
-	}
-	return false;
-}
-
-
