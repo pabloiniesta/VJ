@@ -20,6 +20,7 @@ public:
 	~Scene();
 
 	void init();
+	void show_menu();
 	void update(int deltaTime);
 	void render();
 

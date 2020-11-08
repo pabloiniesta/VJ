@@ -108,7 +108,6 @@ int main(int argc, char **argv)
 	prevTime = glutGet(GLUT_ELAPSED_TIME);
 	// GLUT gains control of the application
 	glutMainLoop();
-
 	return 0;
 }
 

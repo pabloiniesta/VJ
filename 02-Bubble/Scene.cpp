@@ -43,6 +43,9 @@ void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
 	player->update(deltaTime);
+	if (Game::instance().getKey(13)) {
+		Game::instance().init();
+	}
 }
 
 void Scene::render()
