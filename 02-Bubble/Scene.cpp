@@ -86,13 +86,19 @@ void Scene::update(int deltaTime)
 			GLfloat centerBoard = player->posPlayer.x + player->sizePlayer.x / 2;
 			GLfloat distance = (ball->posBall.x + ball->radi) - centerBoard;
 			GLfloat percentage = distance / (player->sizePlayer.x / 2);
-			GLfloat strength = 2.f;
-			glm::vec2 oldVelocity = ball->velBall;
+			GLfloat strength = 1.2f; //solo tocar este num para + o - speed en rebotes
+			int oldx = ball->velBall.x;
+			/*
 			glm::vec2 newVelocity;
 			newVelocity.x = INITIAL_BALL_VELOCITY * percentage * strength;
 			newVelocity.y = INITIAL_BALL_VELOCITY * percentage * strength;
 			newVelocity = glm::normalize(newVelocity) * glm::length(oldVelocity); // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
-			int x = (int)newVelocity.x;
+			int x = (int)newVelocity.x;*/
+			int x = INITIAL_BALL_VELOCITY * percentage * strength;
+			if (x == 0) {
+				if (oldx < 0) x = -3;
+				else x = 3;
+			}
 			ball->velBall.x = x;
 			ball->velBall.y = -1 * abs(ball->velBall.y);
 		}
