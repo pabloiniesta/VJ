@@ -1,18 +1,23 @@
-#include <iostream>
-#include <cmath>
-#include <glm/gtc/matrix_transform.hpp>
 #include "Scene.h"
 #include "Game.h"
+#include <cmath>
+#include <glm/gtc/matrix_transform.hpp>
+#include <string>
+#include <iostream>
+#include <GL/glew.h>
+#include <GL/glut.h>
+
+using namespace std;
 
 
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
 #define INIT_PLAYER_X_TILES 17 //Donde spawnea el player
-#define INIT_PLAYER_Y_TILES 24
+#define INIT_PLAYER_Y_TILES 54
 
 #define INIT_BALL_X_TILES 17 //Donde spawnea la bola
-#define INIT_BALL_Y_TILES 23
+#define INIT_BALL_Y_TILES 53
 
 #define INITIAL_BALL_VELOCITY 3
 
@@ -36,7 +41,7 @@ void Scene::init()
 {
 	initShaders();
 	//cargar mapa con sus tiles
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 
 	//cargar player con sus coordenadas de pantalla y atributos
 	player = new Player();
@@ -64,8 +69,8 @@ void Scene::init()
 		bricks.push_back(*brick); //lo metemos en el vector de bricks
 	}
 
-
-	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	cameraYPos = SCREEN_HEIGHT - 8;
+	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
 	currentTime = 0.0f;
 }
 
@@ -76,6 +81,31 @@ void Scene::update(int deltaTime)
 	player->update(deltaTime);
 	//actualizar bola
 	ball->update(deltaTime);
+
+	if (Game::instance().getKey(13)) {
+		
+		Game::instance().init();
+
+	}
+
+	if (Game::instance().getKey(55)) { //MOVE UP
+		cameraYPos = cameraYPos+300 - (SCREEN_WIDTH - 1) / 2;
+		for(int i=0;i<1;i++){
+			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+		}
+	}
+	if (Game::instance().getKey(56)) {//MOVE DOWN
+		cameraYPos = cameraYPos + 350 - (SCREEN_WIDTH - 1) / 2;
+		for (int i = 0;i < 1;i++) {
+			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+		}
+	}
+	if (Game::instance().getKey(57)) {//RESET CAM
+		cameraYPos = SCREEN_HEIGHT-8;
+		for (int i = 0;i < 1;i++) {
+			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+		}
+	}
 
 	if (ball->posBall.y == 325) {
 		ball->isSticky = true;

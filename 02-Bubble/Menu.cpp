@@ -58,6 +58,7 @@ void Menu::update(int deltaTime) {
 	else { //Main menu screen
 		if (Game::instance().getKey(49)) { //Input 1 - Start
 			Game::instance().nextLevel();
+			OutputDebugStringW(L"My output string.");
 		}
 		else if (Game::instance().getKey(50)) { //Input 2 - Instructions
 			bInstructions = true;

@@ -10,7 +10,6 @@
 #include "Brick.h"
 
 
-
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
 enum Direction {
@@ -44,6 +43,7 @@ private:
 	float currentTime;
 	glm::mat4 projection;
 	vector<Brick> bricks;
+	float cameraYPos;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
