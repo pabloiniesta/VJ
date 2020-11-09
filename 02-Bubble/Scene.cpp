@@ -69,8 +69,8 @@ void Scene::init()
 		bricks.push_back(*brick); //lo metemos en el vector de bricks
 	}
 
-	cameraYPos = SCREEN_HEIGHT - 8;
-	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+	cameraYPos = SCREEN_HEIGHT - 160;
+	projection = glm::ortho(20.f, float(SCREEN_WIDTH -150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos+80);
 	currentTime = 0.0f;
 }
 
@@ -91,19 +91,19 @@ void Scene::update(int deltaTime)
 	if (Game::instance().getKey(55)) { //MOVE UP
 		cameraYPos = cameraYPos+300 - (SCREEN_WIDTH - 1) / 2;
 		for(int i=0;i<1;i++){
-			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
 	}
 	if (Game::instance().getKey(56)) {//MOVE DOWN
 		cameraYPos = cameraYPos + 350 - (SCREEN_WIDTH - 1) / 2;
 		for (int i = 0;i < 1;i++) {
-			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
 	}
 	if (Game::instance().getKey(57)) {//RESET CAM
-		cameraYPos = SCREEN_HEIGHT-8;
+		cameraYPos = SCREEN_HEIGHT-160;
 		for (int i = 0;i < 1;i++) {
-			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
+			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
 	}
 	//mirar si la bola se ha caido por el hueco
