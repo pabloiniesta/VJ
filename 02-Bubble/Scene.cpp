@@ -13,11 +13,11 @@ using namespace std;
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 17 //Donde spawnea el player
-#define INIT_PLAYER_Y_TILES 54
+#define INIT_PLAYER_X_TILES 9 //Donde spawnea el player
+#define INIT_PLAYER_Y_TILES 46
 
-#define INIT_BALL_X_TILES 17 //Donde spawnea la bola
-#define INIT_BALL_Y_TILES 53
+#define INIT_BALL_X_TILES 9 //Donde spawnea la bola
+#define INIT_BALL_Y_TILES 45
 
 #define INITIAL_BALL_VELOCITY 3
 
@@ -106,14 +106,15 @@ void Scene::update(int deltaTime)
 			projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(cameraYPos + SCREEN_HEIGHT - 1), cameraYPos);
 		}
 	}
-
-	if (ball->posBall.y == 325) {
-		ball->isSticky = true;
-		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
-		ball->velBall.x = INITIAL_BALL_VELOCITY;
-		ball->velBall.y = INITIAL_BALL_VELOCITY;
+	//mirar si la bola se ha caido por el hueco
+	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == map->mapSize.y - 1) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+		ball->isSticky = true;
+		//VIDAPLAYER - 1;
 	}
+
+
 	//mirar colision bola con player
 	if (ball->velBall.y > 0) { // si la bola baja
 		// NO TOCAR NADA A PARTIR DE AQUI O MUERTE
@@ -173,11 +174,12 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render(); //pintar mapa
-	player->render(); //pintar player
+	
 	ball->render(); //pintar bola
 	for (int i = 0; i < bricks.size();i++) {
 		if(bricks[i].hp > 0) bricks[i].render();
 	}
+	player->render(); //pintar player
 }
 
 void Scene::initShaders()

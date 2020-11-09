@@ -23,6 +23,7 @@ void Ball::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)//til
 	tileMapDispl = tileMapPos;
 	radi = 8;
 	isSticky = true;
+	sizeBall = glm::ivec2(16, 16);
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBall.x), float(tileMapDispl.y + posBall.y)));
 
 }

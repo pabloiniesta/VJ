@@ -18,6 +18,7 @@ public:
  
 	glm::ivec2 velBall;
 	glm::ivec2 posBall;
+	glm::ivec2 sizeBall;
 	GLfloat radi;
 	bool isSticky;
 
