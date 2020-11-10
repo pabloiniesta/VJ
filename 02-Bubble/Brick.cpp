@@ -8,6 +8,7 @@ void Brick::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cha
 		points = 10;
 		sizeBrick = glm::ivec2(32, 16);
 		tipo = 'r';
+		sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
 	}
 	else if (typebrick == 'g') { //ladrillo verde, 2hp, 20 puntos
 		spritesheet.loadFromFile("images/greenbrick.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -15,6 +16,7 @@ void Brick::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cha
 		points = 20;
 		sizeBrick = glm::ivec2(32, 16);
 		tipo = 'g';
+		sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
 	}
 	else if (typebrick == 'b') { //ladrillo azul, 3hp, 30 puntos
 		spritesheet.loadFromFile("images/bluebrick.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -22,8 +24,32 @@ void Brick::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cha
 		points = 30;
 		sizeBrick = glm::ivec2(32, 16);
 		tipo = 'b';
+		sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
 	}
-	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	else if (typebrick == 'k') { //Llave, 1hp, 0 puntos
+		spritesheet.loadFromFile("images/key.png", TEXTURE_PIXEL_FORMAT_RGBA);
+		hp = 1;
+		points = 0;
+		sizeBrick = glm::ivec2(32, 32);
+		tipo = 'k';
+		sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	}
+	else if (typebrick == 'A') { //Puerta A, 1hp, 0 puntos
+		spritesheet.loadFromFile("images/metal.png", TEXTURE_PIXEL_FORMAT_RGBA);
+		hp = 1;
+		points = 0;
+		sizeBrick = glm::ivec2(16, 16);
+		tipo = 'A';
+		sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	}
+	else if (typebrick == 'B') { //Puerta B, 1hp, 0 puntos
+		spritesheet.loadFromFile("images/metal.png", TEXTURE_PIXEL_FORMAT_RGBA);
+		hp = 1;
+		points = 0;
+		sizeBrick = glm::ivec2(16, 16);
+		tipo = 'B';
+		sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	}
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
 }

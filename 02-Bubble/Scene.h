@@ -44,6 +44,8 @@ private:
 	glm::mat4 projection;
 	vector<Brick> bricks;
 	float cameraYPos;
+	int stage;
+	int door;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto

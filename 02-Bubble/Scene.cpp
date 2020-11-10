@@ -14,10 +14,10 @@ using namespace std;
 #define SCREEN_Y 16
 
 #define INIT_PLAYER_X_TILES 9 //Donde spawnea el player
-#define INIT_PLAYER_Y_TILES 46
+#define INIT_PLAYER_Y_TILES 67
 
 #define INIT_BALL_X_TILES 9 //Donde spawnea la bola
-#define INIT_BALL_Y_TILES 45
+#define INIT_BALL_Y_TILES 66
 
 #define INITIAL_BALL_VELOCITY 3
 
@@ -69,9 +69,11 @@ void Scene::init()
 		bricks.push_back(*brick); //lo metemos en el vector de bricks
 	}
 
-	cameraYPos = SCREEN_HEIGHT - 160;
+	cameraYPos = SCREEN_HEIGHT+223;
 	projection = glm::ortho(20.f, float(SCREEN_WIDTH -150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos+80);
 	currentTime = 0.0f;
+	stage = 1;
+	door = 1;
 }
 
 void Scene::update(int deltaTime)
@@ -101,11 +103,63 @@ void Scene::update(int deltaTime)
 		}
 	}
 	if (Game::instance().getKey(57)) {//RESET CAM
-		cameraYPos = SCREEN_HEIGHT-160;
+		cameraYPos = SCREEN_HEIGHT-8;
 		for (int i = 0;i < 1;i++) {
 			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
 	}
+	//control de camara dependiendo de la stage y bola
+	if (stage == 1) { //primer stage
+		if (ball->posBall.y / map->getTileSize() == 47 && ball->velBall.y < 0) { //sube stage 2
+			cameraYPos = SCREEN_HEIGHT - 175;
+			stage = 2;
+			int posplayerx = (player->posPlayer.x / map->getTileSize());
+			int posplayery = (player->posPlayer.y / map->getTileSize()) - 24; //subir player
+			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+	}
+	else if (stage == 2) { //segundo stage
+		if (ball->posBall.y / map->getTileSize() == 23 && ball->velBall.y < 0) { //sube hacia stage 3
+			cameraYPos = SCREEN_HEIGHT - 550;
+			stage = 3;
+			int posplayerx = (player->posPlayer.x / map->getTileSize());
+			int posplayery = (player->posPlayer.y / map->getTileSize()) - 24; //subir player
+			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+		if (ball->posBall.y / map->getTileSize() == 48 && ball->velBall.y > 0) { //baja a stage 1 
+			cameraYPos = SCREEN_HEIGHT + 223;
+			stage = 1;
+			int posplayerx = (player->posPlayer.x / map->getTileSize());
+			int posplayery = (player->posPlayer.y / map->getTileSize()) + 24; //bajar player
+			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+	}
+	else {
+		if (ball->posBall.y / map->getTileSize() == 24 && ball->velBall.y > 0) { //sube hacia stage 3
+			cameraYPos = SCREEN_HEIGHT - 175;
+			stage = 2;
+			int posplayerx = (player->posPlayer.x / map->getTileSize());
+			int posplayery = (player->posPlayer.y / map->getTileSize()) + 24; //bajar player
+			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+
+
+	}
+
+
+
 	//mirar si la bola se ha caido por el hueco
 	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == map->mapSize.y - 1) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
@@ -125,12 +179,6 @@ void Scene::update(int deltaTime)
 			GLfloat percentage = distance / (player->sizePlayer.x / 2);
 			GLfloat strength = 1.2f; //solo tocar este num para + o - speed en rebotes
 			int oldx = ball->velBall.x;
-			/*
-			glm::vec2 newVelocity;
-			newVelocity.x = INITIAL_BALL_VELOCITY * percentage * strength;
-			newVelocity.y = INITIAL_BALL_VELOCITY * percentage * strength;
-			newVelocity = glm::normalize(newVelocity) * glm::length(oldVelocity); // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
-			int x = (int)newVelocity.x;*/
 			int x = INITIAL_BALL_VELOCITY * percentage * strength;
 			if (x == 0) {
 				if (oldx < 0) x = -3;
@@ -142,17 +190,47 @@ void Scene::update(int deltaTime)
 		
 	}
 
-	//mirar colision de ladrillos con bola
+	//mirar colision de objetos con bola
 	bool choque = false;
 	for (int i = 0; i < bricks.size();i++) {
-		if (bricks[i].hp > 0) { //si el brick esta vivo
+		if (bricks[i].hp > 0) { //si el objeto esta vivo
 			pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallObject(*ball, bricks[i]);
 			if (colision.first) {
-				bricks[i].colision();
-				if (choque == false) { //caso colision con doble ladrillo
-					if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
-					else ball->velBall.y *= -1; //colision vertical
-					choque = true;
+				if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') { // si son ladrillos
+					bricks[i].colision();
+					if (choque == false) { //caso colision con doble ladrillo
+						if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+						else ball->velBall.y *= -1; //colision vertical
+						choque = true;
+					}
+				}
+				else { //cosas 
+					if (bricks[i].tipo == 'k') {
+						bricks[i].colision();
+						if (door == 1) { //primera llave abre primera puerta
+							for (int j = 0; j < bricks.size();j++) {
+								if (bricks[j].hp > 0 && bricks[j].tipo == 'A') bricks[j].colision();
+							}
+						}
+						if (door == 3) { //segunda llave abre segunda puerta
+							for (int j = 0; j < bricks.size();j++) {
+								if (bricks[j].hp > 0 && bricks[j].tipo == 'B') bricks[j].colision();
+							}
+						}
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+						door = door + 1;
+					}
+					if (bricks[i].tipo == 'B' || bricks[i].tipo == 'A') { //puerta A o B cerrada
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
 				}
 			}
 			
