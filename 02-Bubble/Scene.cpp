@@ -55,6 +55,11 @@ void Scene::init()
 	ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 	ball->setTileMap(map);
 
+	//cargar malo
+	enemy = new Enemy();
+	enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize()));
+	enemy->setTileMap(map);
 	
 
 	//cargar ladrillos
@@ -76,6 +81,7 @@ void Scene::init()
 	door = 1;
 	vidas = 5;
 	loot = map->coins;
+	enemigoActivo = false;
 }
 
 void Scene::update(int deltaTime)
@@ -164,10 +170,35 @@ void Scene::update(int deltaTime)
 
 	}
 
+	//mirar colision enemigo con player y mover enemigo
+	if (enemigoActivo) {
+		if (enemy->posEnemy.x < player->posPlayer.x) enemy->moveRight();
+		if (enemy->posEnemy.x > player->posPlayer.x) enemy->moveLeft();
+		if (enemy->posEnemy.y < player->posPlayer.y) enemy->moveDown();
+		if (enemy->posEnemy.y > player->posPlayer.y) enemy->moveUp();
 
+		if (CheckCollisionEnemyPlayer(*enemy, *player)) { //si el enemigo te toca
+			enemigoActivo = false;
+			--vidas;
+			enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize())); //reset enemigo
+			ball->isSticky = true;
+			if (stage == 1) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+			}
+			else if (stage == 2) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES-24) * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES-24) * map->getTileSize()));
+			}
+			else if (stage == 3) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES - 48) * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES - 48) * map->getTileSize()));
+			}
+		}
+	}
 
 	//mirar si la bola se ha caido por el hueco
-	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == map->mapSize.y - 1) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
+	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == 71) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 		ball->isSticky = true;
@@ -237,7 +268,7 @@ void Scene::update(int deltaTime)
 							choque = true;
 						}
 					}
-					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {
+					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {//diamante o coin
 						bricks[i].colision();
 						dinero += bricks[i].points;
 						--loot;
@@ -247,7 +278,7 @@ void Scene::update(int deltaTime)
 							choque = true;
 						}
 					}
-					if (bricks[i].tipo == 'x') {
+					if (bricks[i].tipo == 'x') { //atm
 						bricks[i].colision();
 						dinero = dinero + puntuacion;
 						puntuacion = 0;
@@ -257,7 +288,10 @@ void Scene::update(int deltaTime)
 							choque = true;
 						}
 					}
-					if (bricks[i].tipo == 't') {
+					if (bricks[i].tipo == 't') { //timbre o alarma
+						if (!enemigoActivo) { //si no esta el malo por ahi lo activamos
+							enemigoActivo = true;
+						}
 						if (choque == false) { //caso colision con doble ladrillo
 							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 							else ball->velBall.y *= -1; //colision vertical
@@ -270,8 +304,13 @@ void Scene::update(int deltaTime)
 		}
 	}
 
-	
+	//mirar condicion de victoria
+	if (loot == 0) {
+	}
+	//mirar condicion de derrota
+	if (vidas == 0) {
 
+	}
 }
 
 void Scene::render()
@@ -285,11 +324,13 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render(); //pintar mapa
-	
+
 	ball->render(); //pintar bola
+
 	for (int i = 0; i < bricks.size();i++) {
-		if(bricks[i].hp > 0) bricks[i].render();
+		if(bricks[i].hp > 0) bricks[i].render(); //pintar ladrillos y objetos
 	}
+	if(enemigoActivo)enemy->render();
 	player->render(); //pintar player
 }
 
@@ -367,14 +408,14 @@ pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallPlayer(Ball& on
 		return make_pair(GL_FALSE, make_pair(UP, glm::vec2(0, 0)));
 }
 
-bool Scene::CheckCollisionBrickPlayer(Brick &one, Player &two) // AABB - AABB collision
+bool Scene::CheckCollisionEnemyPlayer(Enemy &one, Player &two) // AABB - AABB collision
 {
 	// Collision x-axis?
-	bool collisionX = one.posBrick.x + one.sizeBrick.x >= two.posPlayer.x &&
-		two.posPlayer.x + two.sizePlayer.x >= one.posBrick.x;
+	bool collisionX = one.posEnemy.x + one.sizeEnemy.x >= two.posPlayer.x &&
+		two.posPlayer.x + two.sizePlayer.x >= one.posEnemy.x;
 	// Collision y-axis?
-	bool collisionY = one.posBrick.y + one.sizeBrick.y >= two.posPlayer.y &&
-		two.posPlayer.y + two.sizePlayer.y>= one.posBrick.y;
+	bool collisionY = one.posEnemy.y + one.sizeEnemy.y >= two.posPlayer.y &&
+		two.posPlayer.y + two.sizePlayer.y>= one.posEnemy.y;
 	// Collision only if on both axes
 	return collisionX && collisionY;
 }

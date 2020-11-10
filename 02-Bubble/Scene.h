@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Ball.h"
 #include "Brick.h"
+#include "Enemy.h"
 
 
 // Scene contains all the entities of our game.
@@ -39,6 +40,7 @@ private:
 	TileMap *map; //el mapa de tiles
 	Player *player; //el player
 	Ball *ball;  //la bola
+	Enemy *enemy;  //el malo
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
@@ -50,11 +52,12 @@ private:
 	int puntuacion;
 	int dinero;
 	int loot;
+	bool enemigoActivo;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallPlayer(Ball& one, Player& two);//params-> colision?, Direction para dir colision, ivec2 = dist entre los 2
-	bool CheckCollisionBrickPlayer(Brick& one, Player& two);
+	bool CheckCollisionEnemyPlayer(Enemy& one, Player& two);
 																								
 	Direction VectorDirection(glm::vec2 target);
 };
