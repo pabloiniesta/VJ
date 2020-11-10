@@ -46,11 +46,14 @@ private:
 	float cameraYPos;
 	int stage;
 	int door;
+	int vidas;
+	int puntuacion;
+	int dinero;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallPlayer(Ball& one, Player& two);//params-> colision?, Direction para dir colision, ivec2 = dist entre los 2
-
+	bool CheckCollisionBrickPlayer(Brick& one, Player& two);
 																								
 	Direction VectorDirection(glm::vec2 target);
 };

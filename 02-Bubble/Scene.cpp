@@ -74,6 +74,7 @@ void Scene::init()
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
+	vidas = 5;
 }
 
 void Scene::update(int deltaTime)
@@ -114,12 +115,13 @@ void Scene::update(int deltaTime)
 			cameraYPos = SCREEN_HEIGHT - 175;
 			stage = 2;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
-			int posplayery = (player->posPlayer.y / map->getTileSize()) - 24; //subir player
+			int posplayery = (player->posPlayer.y / map->getTileSize()) - 23; //subir player
 			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
 			for (int i = 0;i < 1;i++) {
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if (player->posPlayer.y / map->getTileSize() == 48) player->posPlayer.y += 4; //player no puede salir de la habitacion
 	}
 	else if (stage == 2) { //segundo stage
 		if (ball->posBall.y / map->getTileSize() == 23 && ball->velBall.y < 0) { //sube hacia stage 3
@@ -142,6 +144,8 @@ void Scene::update(int deltaTime)
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if (player->posPlayer.y / map->getTileSize() == 24) player->posPlayer.y += 4; //player no puede salir de la habitacion
+		if ((player->posPlayer.y + player->sizePlayer.y) / map->getTileSize() == 48) player->posPlayer.y -= 4; //player no puede salir de la habitacion
 	}
 	else {
 		if (ball->posBall.y / map->getTileSize() == 24 && ball->velBall.y > 0) { //sube hacia stage 3
@@ -154,6 +158,7 @@ void Scene::update(int deltaTime)
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if ((player->posPlayer.y + player->sizePlayer.y) / map->getTileSize() == 24) player->posPlayer.y -= 4; //player no puede salir de la habitacion
 
 
 	}
@@ -165,9 +170,8 @@ void Scene::update(int deltaTime)
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 		ball->isSticky = true;
-		//VIDAPLAYER - 1;
+		--vidas;
 	}
-
 
 	//mirar colision bola con player
 	if (ball->velBall.y > 0) { // si la bola baja
@@ -189,7 +193,7 @@ void Scene::update(int deltaTime)
 		}
 		
 	}
-
+	
 	//mirar colision de objetos con bola
 	bool choque = false;
 	for (int i = 0; i < bricks.size();i++) {
@@ -198,6 +202,7 @@ void Scene::update(int deltaTime)
 			if (colision.first) {
 				if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') { // si son ladrillos
 					bricks[i].colision();
+					puntuacion += bricks[i].points;
 					if (choque == false) { //caso colision con doble ladrillo
 						if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 						else ball->velBall.y *= -1; //colision vertical
@@ -205,7 +210,7 @@ void Scene::update(int deltaTime)
 					}
 				}
 				else { //cosas 
-					if (bricks[i].tipo == 'k') {
+					if (bricks[i].tipo == 'k') { //cojer llave
 						bricks[i].colision();
 						if (door == 1) { //primera llave abre primera puerta
 							for (int j = 0; j < bricks.size();j++) {
@@ -225,6 +230,15 @@ void Scene::update(int deltaTime)
 						door = door + 1;
 					}
 					if (bricks[i].tipo == 'B' || bricks[i].tipo == 'A') { //puerta A o B cerrada
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {
+						bricks[i].colision();
+						dinero += bricks[i].points;
 						if (choque == false) { //caso colision con doble ladrillo
 							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 							else ball->velBall.y *= -1; //colision vertical
@@ -334,6 +348,17 @@ pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallPlayer(Ball& on
 		return make_pair(GL_FALSE, make_pair(UP, glm::vec2(0, 0)));
 }
 
+bool Scene::CheckCollisionBrickPlayer(Brick &one, Player &two) // AABB - AABB collision
+{
+	// Collision x-axis?
+	bool collisionX = one.posBrick.x + one.sizeBrick.x >= two.posPlayer.x &&
+		two.posPlayer.x + two.sizePlayer.x >= one.posBrick.x;
+	// Collision y-axis?
+	bool collisionY = one.posBrick.y + one.sizeBrick.y >= two.posPlayer.y &&
+		two.posPlayer.y + two.sizePlayer.y>= one.posBrick.y;
+	// Collision only if on both axes
+	return collisionX && collisionY;
+}
 
 
 Direction Scene::VectorDirection(glm::vec2 target)
