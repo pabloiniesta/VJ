@@ -37,6 +37,7 @@ public:
 	
 	vector< pair<char, pair<int, int> > > brickInfo; //vector con los datos de un brick, char es el tipo (r g b) y su pos x y.
 	glm::ivec2 mapSize;
+	int coins;
 
 private:
 	bool loadLevel(const string &levelFile);

@@ -75,6 +75,7 @@ void Scene::init()
 	stage = 1;
 	door = 1;
 	vidas = 5;
+	loot = map->coins;
 }
 
 void Scene::update(int deltaTime)
@@ -239,6 +240,24 @@ void Scene::update(int deltaTime)
 					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {
 						bricks[i].colision();
 						dinero += bricks[i].points;
+						--loot;
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == 'x') {
+						bricks[i].colision();
+						dinero = dinero + puntuacion;
+						puntuacion = 0;
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == 't') {
 						if (choque == false) { //caso colision con doble ladrillo
 							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 							else ball->velBall.y *= -1; //colision vertical

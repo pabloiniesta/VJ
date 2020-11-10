@@ -49,6 +49,7 @@ private:
 	int vidas;
 	int puntuacion;
 	int dinero;
+	int loot;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
