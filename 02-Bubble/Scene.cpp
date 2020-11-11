@@ -22,37 +22,27 @@ using namespace std;
 #define INITIAL_BALL_VELOCITY 3
 
 bool god; //godmode
-bool skip; //sltar niveles
-
-Scene::Scene()
-{
-	map = NULL;
-	player = NULL;
-}
-
-Scene::~Scene()
-{
-	if(map != NULL)
-		delete map;
-	if(player != NULL)
-		delete player;
-}
+bool skip; //sltar pantalla
+bool next_level; //saltar nivelaz
 
 
 void Scene::init(int lvl) 
 {
+	if (map != NULL)
+		delete map;
+	if (player != NULL)
+		delete player;
 	initShaders();
-	glutKeyboardUpFunc(keyUp);
 	
 	//cargar mapa con sus tiles
 	if (lvl == 1) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 2) {
-		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 3) {
-		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level04.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 
 	//cargar player con sus coordenadas de pantalla y atributos
@@ -91,17 +81,18 @@ void Scene::init(int lvl)
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
-	vidas = 5;
+	vidas = 2;
 	loot = 0;
 	god = false;
 	skip = false;
+	next_level = false;
 	for (int i = 0; i < bricks.size();i++) { //contar loot
 		if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c')loot = loot + 1;
 	}
 	enemigoActivo = false;
 }
 
-void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
+/*void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
 	if (key == 'a') {
 		if (!god)god = true;
 		else god = false;
@@ -109,7 +100,10 @@ void keyUp(unsigned char key, int x, int y) { //controla las releases de las tec
 	if (key == 's') {
 		if (!skip)skip = true;
 	}
-}
+	if (key == 'd') {
+		if (!next_level) next_level = true;
+	}
+}*/
 
 
 void Scene::update(int deltaTime)
@@ -120,12 +114,7 @@ void Scene::update(int deltaTime)
 	//actualizar bola
 	ball->update(deltaTime);
 
-	if (Game::instance().getKey(13)) {
-		
-		Game::instance().init();
-
-	}
-
+	/*
 	if (Game::instance().getKey(55)) { //MOVE UP
 		cameraYPos = cameraYPos+300 - (SCREEN_WIDTH - 1) / 2;
 		for(int i=0;i<1;i++){
@@ -143,9 +132,27 @@ void Scene::update(int deltaTime)
 		for (int i = 0;i < 1;i++) {
 			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
+	}*/
+
+	if (Game::instance().getKey(52)) { //4 -> saltar pantalla
+		if (Game::instance().getKey(52)) {
+			Game::instance().keyReleased(52);
+		}
+		if (Game::instance().getKey(52)) {
+			Game::instance().keyReleased(52);
+		}
+		skip = true;
 	}
-
-
+	if (Game::instance().getKey(53)) { // 5 -> god mode
+		if (Game::instance().getKey(53)) {
+			Game::instance().keyReleased(53);
+		}
+		if (Game::instance().getKey(53)) {
+			Game::instance().keyReleased(53);
+		}
+		if (god) god = false;
+			else god = true;
+	}
 	//saltar de pantalla
 	if (skip) {
 		ball->isSticky = true;
@@ -375,23 +382,22 @@ void Scene::update(int deltaTime)
 
 	//mirar condicion de victoria
 	
-	if (Game::instance().getKey(13)){
+	if (loot == 0 || Game::instance().getKey(54)){
+		if (Game::instance().getKey(54)) {
+			Game::instance().keyReleased(54);
+		}
+		if (Game::instance().getKey(54)) {
+			Game::instance().keyReleased(54);
+		}
 		if (Game::instance().getlevelAct() == 3){
 			Game::instance().winScreen(puntuacion, dinero);
 		}
 		else{
 			Game::instance().nextLevel(0);
 			char s[256];
-			sprintf(s, "%d", Game::instance().getlevelAct()); // 0,0,480,640
+			sprintf(s, "%d", Game::instance().getlevelAct()); 
 			OutputDebugStringA((LPCSTR)s);
 		}
-	}
-	/*if (Game::instance().getKey(13)){ 
-		Game::instance().winScreen(puntuacion, dinero);
-	}*/
-
-	if (loot == 0){
-		//Game::instance().winScreen(puntuacion, dinero);
 	}
 
 	//mirar condicion de derrota

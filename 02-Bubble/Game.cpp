@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Texture.h"
 #include "Constants.h"
+#include "Scene.h"
 
 using namespace std;
 
@@ -14,10 +15,9 @@ void Game::init()
 	bPlay = true;
 	state = 1;
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-	levelAct = MENU_LVL;
 	setMenuState();
 	MainMenu.init();
-	scene.init(1);
+	Scene::instance().init(1);
 	gui.init();
 }
 
@@ -30,11 +30,10 @@ void Game::setMenuState() {
 
 bool Game::update(int deltaTime) {
 	if (levelAct == MENU_LVL) {  //Main menu
-
 		MainMenu.update(deltaTime);
 	}
 	else {
-		scene.update(deltaTime);
+		Scene::instance().update(deltaTime);
 	}
 	return bPlay;
 }
@@ -47,7 +46,7 @@ void Game::render()
 		MainMenu.render();
 	}
 	else {
-		scene.render();
+		Scene::instance().render();
 		gui.render();
 	}
 }
@@ -60,26 +59,17 @@ void Game::nextLevel(int lvl) {
 	if (lvl == 0) {
 		++levelAct; //Go to next level
 		if (levelAct == 1) {//Num of total levels+1
-			scene.init(1);
+			OutputDebugStringW(L"LEVEL1");
+			Scene::instance().init(1);
 		}
 		else if (levelAct == 2) {
-			scene.init(2);
+			OutputDebugStringW(L"LEVEL2");
+			Scene::instance().init(2);
 		}
 		else if (levelAct == 3) {
-			scene.init(3);
+			OutputDebugStringW(L"LEVEL3");
+			Scene::instance().init(3);
 		}
-	}
-	else if (lvl == 1) {
-		levelAct = 1;
-		scene.init(1);
-	}
-	else if (lvl == 2) {
-		levelAct = 2;
-		scene.init(2);
-	}
-	else if (lvl == 3) {
-		levelAct = 3;
-		scene.init(3);
 	}
 }
 
