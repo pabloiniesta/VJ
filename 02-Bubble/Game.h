@@ -54,8 +54,10 @@ private:
 	                                  // we can have access at any time
 	int state;						  // 1 = menu, 2 = instructions, 3 = credits, 4 = play
 	Menu MainMenu;
-	GUI GUI;
+	GUI gui;
 	int levelAct;
+	int scoreAct;
+	int lifesAct;
 };
 
 

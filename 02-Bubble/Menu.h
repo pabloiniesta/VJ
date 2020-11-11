@@ -3,6 +3,7 @@
 #include "TexturedQuad.h"
 #include "ShaderProgram.h"
 #include "Texture.h"
+#include "Text.h"
 
 
 class Menu
@@ -53,4 +54,5 @@ private:
 	bool bInstructions; //Go to instructions scree
 	bool bGameOver; //Go to game over screen
 	bool bNewRecord; //go to record screen with possibility with adding new record
+	Text testText;
 };

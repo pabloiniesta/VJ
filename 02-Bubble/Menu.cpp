@@ -43,6 +43,10 @@ void Menu::init() {
 
 	creditsQuad = TexturedQuad::createTexturedQuad(geomGUI, texCoords, texProgram);
 	creditsTex.loadFromFile("images/credits.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+	if (!testText.init("fonts/OpenSans-Bold.ttf")) {
+		OutputDebugStringW(L"Error FT");
+	}
 }
 
 
@@ -58,7 +62,6 @@ void Menu::update(int deltaTime) {
 	else { //Main menu screen
 		if (Game::instance().getKey(49)) { //Input 1 - Start
 			Game::instance().nextLevel();
-			OutputDebugStringW(L"My output string.");
 		}
 		else if (Game::instance().getKey(50)) { //Input 2 - Instructions
 			bInstructions = true;
@@ -112,6 +115,7 @@ void Menu::render() {
 	}
 	else { //Main menu screen
 		mainTextureQuad->render(mainTexture);
+		testText.render("999999", glm::vec2(.0f, .0f), 25.0f, glm::vec4(0.5, 0.8f, 0.2f, 1.0f));d
 	}
 }
 

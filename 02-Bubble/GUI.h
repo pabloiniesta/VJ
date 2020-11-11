@@ -3,6 +3,7 @@
 #include "TexturedQuad.h"
 #include "ShaderProgram.h"
 #include "Texture.h"
+#include "Text.h"
 
 class GUI
 {
@@ -34,6 +35,7 @@ private:
 	Texture abilityTexture;
 
 	//score
+	Text scoreText;
 	unsigned int scoreAct;
 
 	//Energy
@@ -44,6 +46,7 @@ private:
 	//Lifes
 	TexturedQuad* lifesQuad;
 	Texture lifesIndicatorTexture;
+	Text lifesText;
 	int lifesAct;
 
 };

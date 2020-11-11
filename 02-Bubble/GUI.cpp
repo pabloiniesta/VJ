@@ -3,9 +3,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <iostream>
+#include <GL/glut.h>
+#include <string>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include <iostream>
 using namespace std;
+
 
 GUI::GUI()
 {
@@ -20,19 +26,23 @@ void GUI::init() {
 	//Texture quads
 	glm::vec2 texCoords[2] = { glm::vec2(0.f, 0.f), glm::vec2(1.f, 1.f) };
 	glm::vec2 geomGUI[2] = {
-			glm::vec2(float(GUI_ABILITY_IMG_WIDTH), 0.f),
-			glm::vec2(float(SCREEN_WIDTH), GUI_HEIGHT)
+			glm::vec2(float(GUI_ABILITY_IMG_WIDTH+475), -14.f), //Margen izquierdo, margen superior
+			glm::vec2(float(GUI_ABILITY_IMG_WIDTH + 555), GUI_HEIGHT-6.5) //Margen derecho, margen inferior
 	};
-	glm::vec2 geomAbility[2] = {
-			glm::vec2(0.f, 0.f),
-			glm::vec2(float(GUI_ABILITY_IMG_WIDTH), GUI_HEIGHT)
+	glm::vec2 geoMoney[2] = {
+			glm::vec2(float(GUI_ABILITY_IMG_WIDTH + 480), 18.f), //Margen izquierdo, margen superior
+			glm::vec2(float(GUI_ABILITY_IMG_WIDTH + 550), GUI_HEIGHT - 230) //Margen derecho, margen inferior
 	};
-	float posX = 370.f;
-	float posY = 27.f;
-	glm::vec2 geomEnergy[2] = {
-			glm::vec2(posX, posY),
-			glm::vec2(posX + 30.f, posY + 16.8f) //Is 25 x 14 in reality
-	};
+	mainTextureQuad = TexturedQuad::createTexturedQuad(geomGUI, texCoords, texProgram);
+	mainTexture.loadFromFile("images/gui.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	abilityTexQuad = TexturedQuad::createTexturedQuad(geoMoney, texCoords, texProgram);
+	abilityTexture.loadFromFile("images/bbrick2.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+	if (!scoreText.init("fonts/OpenSans-Bold.ttf")) {
+		OutputDebugStringW(L"Error FT");
+	}
+	
+	scoreAct = 999;
 }
 
 
@@ -50,23 +60,22 @@ void GUI::render() {
 
 	//Ability
 	abilityTexQuad->render(abilityTexture);
-
-	//Energy
-	energyQuad->render(energyTexture);
-	lifesQuad->render(lifesIndicatorTexture);
+	//Texts
 	int vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
 	//cout << vp[0] << " " << vp[1] << " " << vp[2] << " " << vp[3] << endl;
-
+	OutputDebugstd::to_string(vp[0])
 	int screen_height = vp[3] - vp[1];
 	int screen_width = vp[2] - vp[0];
 	int gui_height = screen_height / 5;
 	int hab_size = gui_height / 3 < screen_width / 15 ? gui_height / 3 : screen_width / 15;
+	scoreText.render("Score: " + std::to_string(scoreAct), glm::vec2(screen_width * 0.2f, screen_height - gui_height / 2 + hab_size / 2), hab_size, glm::vec4(0, 0, 0, 1));
+
 }
 
 void GUI::setPlayerEnergy(int energy) {
 	energyAct = energy;
-	energyTexture.loadFromFile("images/energy_" + std::to_string(energy) + ".png", TEXTURE_PIXEL_FORMAT_RGBA);
+	energyTexture.loadFromFile("images/ybrick2.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
 }
 

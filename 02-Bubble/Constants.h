@@ -48,7 +48,7 @@
 #define SCREEN_HEIGHT 300
 
 //GUI
-#define GUI_HEIGHT 60
+#define GUI_HEIGHT 280
 #define HABILITY_SIZE 20
 #define GUI_ABILITY_IMG_WIDTH 80 //Original is 40x32
 #define GUI_ABILITY_IMG_HEIGHT 32

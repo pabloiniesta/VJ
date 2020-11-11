@@ -17,12 +17,13 @@ void Game::init()
 	setMenuState();
 	MainMenu.init();
 	scene.init();
+	gui.init();
 }
 
 void Game::setMenuState() {
 	levelAct = MENU_LVL;
-	//scoreAct = 0;
-	//playerLifes = 3; //Init number of lifes
+	scoreAct = 0;
+	lifesAct = 3; //Init number of lifes
 	//mSoundHelper->playMusic("sounds/menu.wav");
 }
 
@@ -46,6 +47,7 @@ void Game::render()
 	}
 	else {
 		scene.render();
+		gui.render();
 	}
 }
 
@@ -56,7 +58,6 @@ void Game::nextLevel() {
 		scene.init();
 	}
 	else {
-		OutputDebugStringW(L"ELSE");
 	}
 }
 
