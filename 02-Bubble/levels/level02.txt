@@ -6,12 +6,12 @@ images/blocks.png 	-- Tilesheet
 111111111111111111111111
 11                    11
 11         x          11
+11t                   11
 11                    11
 11                    11
+11d c             c d 11
 11                    11
-11c c            c c  11
 11                    11
-11d d            d d  11
 11                    11
 1111111g g g g g 1111111
 11                    11
@@ -63,7 +63,7 @@ images/blocks.png 	-- Tilesheet
 11        k           11
 11  r r r   r r r r   11
 11  r r r r r r r r   11
-11t                   11
+11                    11
 11                    11
 11                    11
 11                    11

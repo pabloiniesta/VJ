@@ -111,17 +111,16 @@ bool TileMap::loadLevel(const string &levelFile)
 				map[j * mapSize.x + i] = 0;
 			}
 			else if (tile == 'd') {
-				++coins;
+				coins++;
 				brickInfo.push_back(make_pair('d', make_pair(i, j)));
 				map[j * mapSize.x + i] = 0;
 			}
 			else if (tile == 'c') {
-				++coins;
+				coins++;
 				brickInfo.push_back(make_pair('c', make_pair(i, j)));
 				map[j * mapSize.x + i] = 0;
 			}
 			else if (tile == 'x') {
-				++coins;
 				brickInfo.push_back(make_pair('x', make_pair(i, j)));
 				map[j * mapSize.x + i] = 0;
 			}

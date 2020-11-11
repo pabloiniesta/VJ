@@ -20,6 +20,7 @@ enum Direction {
 	LEFT
 };
 
+void keyUp(unsigned char key, int x, int y);
 
 class Scene
 {
@@ -57,7 +58,8 @@ private:
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallPlayer(Ball& one, Player& two);//params-> colision?, Direction para dir colision, ivec2 = dist entre los 2
 	bool CheckCollisionEnemyPlayer(Enemy& one, Player& two);
-																								
+																
+	
 	Direction VectorDirection(glm::vec2 target);
 };
 

@@ -21,6 +21,8 @@ using namespace std;
 
 #define INITIAL_BALL_VELOCITY 3
 
+bool god; //godmode
+bool skip; //sltar niveles
 
 Scene::Scene()
 {
@@ -37,9 +39,11 @@ Scene::~Scene()
 }
 
 
-void Scene::init(int lvl)
+void Scene::init(int lvl) 
 {
 	initShaders();
+	glutKeyboardUpFunc(keyUp);
+	
 	//cargar mapa con sus tiles
 	if (lvl == 1) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
@@ -88,9 +92,25 @@ void Scene::init(int lvl)
 	stage = 1;
 	door = 1;
 	vidas = 5;
-	loot = map->coins;
+	loot = 0;
+	god = false;
+	skip = false;
+	for (int i = 0; i < bricks.size();i++) { //contar loot
+		if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c')loot = loot + 1;
+	}
 	enemigoActivo = false;
 }
+
+void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
+	if (key == 'a') {
+		if (!god)god = true;
+		else god = false;
+	}
+	if (key == 's') {
+		if (!skip)skip = true;
+	}
+}
+
 
 void Scene::update(int deltaTime)
 {
@@ -124,6 +144,41 @@ void Scene::update(int deltaTime)
 			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
 	}
+
+
+	//saltar de pantalla
+	if (skip) {
+		ball->isSticky = true;
+		if (stage == 1) { //primer stage
+			cameraYPos = SCREEN_HEIGHT - 175;
+			stage = 2;
+			player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES - 24) * map->getTileSize()));
+			ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES - 24) * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+		else if(stage == 2) {
+			cameraYPos = SCREEN_HEIGHT - 550;
+			stage = 3;
+			player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES - 48) * map->getTileSize()));
+			ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES - 48) * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+		else if (stage == 3) {
+			cameraYPos = SCREEN_HEIGHT + 223;
+			stage = 1;
+			player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+			ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+			for (int i = 0;i < 1;i++) {
+				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+			}
+		}
+		skip = false;
+	}
+
 	//control de camara dependiendo de la stage y bola
 	if (stage == 1) { //primer stage
 		if (ball->posBall.y / map->getTileSize() == 47 && ball->velBall.y < 0) { //sube stage 2
@@ -187,7 +242,7 @@ void Scene::update(int deltaTime)
 
 		if (CheckCollisionEnemyPlayer(*enemy, *player)) { //si el enemigo te toca
 			enemigoActivo = false;
-			--vidas;
+			if(!god)--vidas;
 			enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize())); //reset enemigo
 			ball->isSticky = true;
 			if (stage == 1) {
@@ -210,7 +265,7 @@ void Scene::update(int deltaTime)
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 		ball->isSticky = true;
-		--vidas;
+		if (!god)--vidas;
 	}
 
 	//mirar colision bola con player
@@ -218,18 +273,24 @@ void Scene::update(int deltaTime)
 		// NO TOCAR NADA A PARTIR DE AQUI O MUERTE
 		pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallPlayer(*ball, *player);
 		if (colision.first) { //la bola toca al player. si actualizas la velY con un float el juego se muere, solo act velX en funcion de la colision
-			GLfloat centerBoard = player->posPlayer.x + player->sizePlayer.x / 2;
-			GLfloat distance = (ball->posBall.x + ball->radi) - centerBoard;
-			GLfloat percentage = distance / (player->sizePlayer.x / 2);
-			GLfloat strength = 1.2f; //solo tocar este num para + o - speed en rebotes
-			int oldx = ball->velBall.x;
-			int x = INITIAL_BALL_VELOCITY * percentage * strength;
-			if (x == 0) {
-				if (oldx < 0) x = -3;
-				else x = 3;
+			if (god) {
+				ball->velBall.x = 0;
+				ball->velBall.y *= -1;
 			}
-			ball->velBall.x = x;
-			ball->velBall.y = -1 * abs(ball->velBall.y);
+			else {
+				GLfloat centerBoard = player->posPlayer.x + player->sizePlayer.x / 2;
+				GLfloat distance = (ball->posBall.x + ball->radi) - centerBoard;
+				GLfloat percentage = distance / (player->sizePlayer.x / 2);
+				GLfloat strength = 1.2f; //solo tocar este num para + o - speed en rebotes
+				int oldx = ball->velBall.x;
+				int x = INITIAL_BALL_VELOCITY * percentage * strength;
+				if (x == 0) {
+					if (oldx < 0) x = -3;
+					else x = 3;
+				}
+				ball->velBall.x = x;
+				ball->velBall.y = -1 * abs(ball->velBall.y);
+			}
 		}
 		
 	}
@@ -279,12 +340,12 @@ void Scene::update(int deltaTime)
 					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {//diamante o coin
 						bricks[i].colision();
 						dinero += bricks[i].points;
-						--loot;
 						if (choque == false) { //caso colision con doble ladrillo
 							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 							else ball->velBall.y *= -1; //colision vertical
 							choque = true;
 						}
+						loot = loot - 1;
 					}
 					if (bricks[i].tipo == 'x') { //atm
 						bricks[i].colision();
@@ -329,8 +390,8 @@ void Scene::update(int deltaTime)
 		Game::instance().winScreen(puntuacion, dinero);
 	}*/
 
-	else if (loot == 0) {
-		Game::instance().nextLevel(0);
+	if (loot == 0){
+		//Game::instance().winScreen(puntuacion, dinero);
 	}
 
 	//mirar condicion de derrota
