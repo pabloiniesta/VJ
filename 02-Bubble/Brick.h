@@ -16,6 +16,8 @@ public:
 	void colision();
 	void setPosition(const glm::vec2& pos);
 
+	void makegold(ShaderProgram& shaderProgram);
+
 	glm::ivec2 posBrick;
 	glm::ivec2 sizeBrick;
 	int hp;

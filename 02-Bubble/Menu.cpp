@@ -14,7 +14,12 @@ Menu::Menu()
 }
 
 void Menu::init() {
+	index = 0; //Option by default
+	numOptions = 3;
+	bUpPressed = false;
+	bDownPressed = false;
 	bEnterPressed = false;
+
 	bCredits = false;
 	bInstructions = false;
 	bGameOver = false;
@@ -124,13 +129,11 @@ void Menu::render() {
 
 void Menu::activateGameOver(int score) {
 	bGameOver = true;
-	bEnterPressed = false;
 	resScore = score;
 }
 
 void Menu::activateWin(int score, int money) {
 	bWin = true;
-	bEnterPressed = false;
 	resScore = score;
 	resMoney = money;
 }
