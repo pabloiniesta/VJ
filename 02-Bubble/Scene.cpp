@@ -6,6 +6,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -21,28 +22,38 @@ using namespace std;
 
 #define INITIAL_BALL_VELOCITY 3
 
-bool god; //godmode
-bool skip; //sltar pantalla
-bool next_level; //saltar nivelaz
+bool god; //modo dios
+bool skip; //sltar niveles
+
+Scene::Scene()
+{
+	map = NULL;
+	player = NULL;
+}
+
+Scene::~Scene()
+{
+	if(map != NULL)
+		delete map;
+	if(player != NULL)
+		delete player;
+}
 
 
 void Scene::init(int lvl) 
 {
-	if (map != NULL)
-		delete map;
-	if (player != NULL)
-		delete player;
 	initShaders();
+	glutKeyboardUpFunc(keyUp);
 	
 	//cargar mapa con sus tiles
 	if (lvl == 1) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 2) {
-		map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 3) {
-		map = TileMap::createTileMap("levels/level04.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 
 	//cargar player con sus coordenadas de pantalla y atributos
@@ -60,8 +71,8 @@ void Scene::init(int lvl)
 	//cargar malo
 	enemy = new Enemy();
 	enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
-	enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize()));
 	enemy->setTileMap(map);
+	enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize()));
 	
 
 	//cargar ladrillos
@@ -81,18 +92,19 @@ void Scene::init(int lvl)
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
-	vidas = 2;
+	vidas = 5;
 	loot = 0;
 	god = false;
 	skip = false;
-	next_level = false;
+	random = false;
+	gold = false;
 	for (int i = 0; i < bricks.size();i++) { //contar loot
 		if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c')loot = loot + 1;
 	}
 	enemigoActivo = false;
 }
 
-/*void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
+void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
 	if (key == 'a') {
 		if (!god)god = true;
 		else god = false;
@@ -100,10 +112,7 @@ void Scene::init(int lvl)
 	if (key == 's') {
 		if (!skip)skip = true;
 	}
-	if (key == 'd') {
-		if (!next_level) next_level = true;
-	}
-}*/
+}
 
 
 void Scene::update(int deltaTime)
@@ -114,7 +123,12 @@ void Scene::update(int deltaTime)
 	//actualizar bola
 	ball->update(deltaTime);
 
-	/*
+	if (Game::instance().getKey(13)) {
+		
+		Game::instance().init();
+
+	}
+
 	if (Game::instance().getKey(55)) { //MOVE UP
 		cameraYPos = cameraYPos+300 - (SCREEN_WIDTH - 1) / 2;
 		for(int i=0;i<1;i++){
@@ -132,27 +146,9 @@ void Scene::update(int deltaTime)
 		for (int i = 0;i < 1;i++) {
 			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
-	}*/
+	}
 
-	if (Game::instance().getKey(52)) { //4 -> saltar pantalla
-		if (Game::instance().getKey(52)) {
-			Game::instance().keyReleased(52);
-		}
-		if (Game::instance().getKey(52)) {
-			Game::instance().keyReleased(52);
-		}
-		skip = true;
-	}
-	if (Game::instance().getKey(53)) { // 5 -> god mode
-		if (Game::instance().getKey(53)) {
-			Game::instance().keyReleased(53);
-		}
-		if (Game::instance().getKey(53)) {
-			Game::instance().keyReleased(53);
-		}
-		if (god) god = false;
-			else god = true;
-	}
+
 	//saltar de pantalla
 	if (skip) {
 		ball->isSticky = true;
@@ -374,30 +370,102 @@ void Scene::update(int deltaTime)
 							choque = true;
 						}
 					}
+					if (bricks[i].tipo == 'o') { //brick de oro
+						bricks[i].colision();
+						dinero += bricks[i].points;
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == '?') { //powerup misterioso
+						if (!random) {
+							bricks[i].colision();
+							int choice = 3;// +(rand() % 1);
+
+							if (choice == 1) { //caso 1 spawnea enemigo
+								enemigoActivo = true;
+								enemy->setPosition(glm::vec2(bricks[i].posBrick.x, bricks[i].posBrick.y));
+								random = true;
+							}
+
+							if (choice == 2) { //tirar hacia atras
+								if (stage == 1) puntuacion += 100; //si estas abajo del todo te da puntos
+								if (stage == 2) { //si stage 2 saltas hacia abajo
+									random = true;
+									cameraYPos = SCREEN_HEIGHT + 223;
+									stage = 1;
+									player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+									ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+									for (int i = 0;i < 1;i++) {
+										projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+									}
+								}
+								if (stage == 3) {
+									random = true;
+									cameraYPos = SCREEN_HEIGHT - 175;
+									stage = 2;
+									player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES - 24) * map->getTileSize()));
+									ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES - 24) * map->getTileSize()));
+									for (int i = 0;i < 1;i++) {
+										projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
+									}
+								}
+							}
+
+							if (choice == 3) { //todos los bricks se vuelven de oro
+								gold = true;
+							}
+							if (choice == 4) {
+
+							}
+
+							if (choque == false) { //caso colision con doble ladrillo
+								if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+								else ball->velBall.y *= -1; //colision vertical
+								choque = true;
+							}
+
+						}
+					}
 				}
 			}
 			
 		}
 	}
 
+	//pintar los ladrillos de oro
+	if (gold) {
+		for (int i = 0; i < bricks.size();i++) { //contar loot
+			if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') {
+				if (bricks[i].hp > 0) {
+					bricks[i].makegold(texProgram);
+				}
+			}
+		}
+		gold = false;
+	}
+
 	//mirar condicion de victoria
 	
-	if (loot == 0 || Game::instance().getKey(54)){
-		if (Game::instance().getKey(54)) {
-			Game::instance().keyReleased(54);
-		}
-		if (Game::instance().getKey(54)) {
-			Game::instance().keyReleased(54);
-		}
+	if (Game::instance().getKey(13)){
 		if (Game::instance().getlevelAct() == 3){
 			Game::instance().winScreen(puntuacion, dinero);
 		}
 		else{
 			Game::instance().nextLevel(0);
 			char s[256];
-			sprintf(s, "%d", Game::instance().getlevelAct()); 
+			sprintf(s, "%d", Game::instance().getlevelAct()); // 0,0,480,640
 			OutputDebugStringA((LPCSTR)s);
 		}
+	}
+	/*if (Game::instance().getKey(13)){ 
+		Game::instance().winScreen(puntuacion, dinero);
+	}*/
+
+	if (loot == 0){
+		//Game::instance().winScreen(puntuacion, dinero);
 	}
 
 	//mirar condicion de derrota
@@ -421,7 +489,12 @@ void Scene::render()
 	ball->render(); //pintar bola
 
 	for (int i = 0; i < bricks.size();i++) {
-		if(bricks[i].hp > 0) bricks[i].render(); //pintar ladrillos y objetos
+		if (bricks[i].hp > 0) {
+			if (bricks[i].tipo == '?') {
+				if (random == false)bricks[i].render();
+			}
+			else bricks[i].render(); //pintar ladrillos y objetos
+		}
 	}
 	if(enemigoActivo)enemy->render();
 	player->render(); //pintar player

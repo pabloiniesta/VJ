@@ -41,6 +41,8 @@ void GUI::init() {
 	if (!scoreText.init("fonts/OpenSans-Bold.ttf")) {
 		OutputDebugStringW(L"Error FT");
 	}
+	
+	scoreAct = 999;
 }
 
 
@@ -72,6 +74,11 @@ void GUI::render() {
 
 }
 
+void GUI::setPlayerEnergy(int energy) {
+	energyAct = energy;
+	energyTexture.loadFromFile("images/ybrick2.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+}
 
 void GUI::setLifes(int lifes) {
 	lifesAct = lifes;

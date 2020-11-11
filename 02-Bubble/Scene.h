@@ -20,20 +20,14 @@ enum Direction {
 	LEFT
 };
 
+void keyUp(unsigned char key, int x, int y);
 
 class Scene
 {
 
 public:
-	Scene() {}
-
-
-	static Scene& instance()
-	{
-		static Scene S;
-
-		return S;
-	}
+	Scene();
+	~Scene();
 
 	void init(int lvl);
 	void update(int deltaTime);
@@ -59,6 +53,8 @@ private:
 	int dinero;
 	int loot;
 	bool enemigoActivo;
+	bool random;
+	bool gold;
 
 
 	pair<bool, pair<Direction, glm::ivec2>> CheckCollisionBallObject(Ball& one, Brick& two); //mirar colision bola con objeto
