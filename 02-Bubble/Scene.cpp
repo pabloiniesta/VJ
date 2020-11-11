@@ -55,6 +55,11 @@ void Scene::init()
 	ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 	ball->setTileMap(map);
 
+	//cargar malo
+	enemy = new Enemy();
+	enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize()));
+	enemy->setTileMap(map);
 	
 
 	//cargar ladrillos
@@ -74,6 +79,9 @@ void Scene::init()
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
+	vidas = 5;
+	loot = map->coins;
+	enemigoActivo = false;
 }
 
 void Scene::update(int deltaTime)
@@ -114,12 +122,13 @@ void Scene::update(int deltaTime)
 			cameraYPos = SCREEN_HEIGHT - 175;
 			stage = 2;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
-			int posplayery = (player->posPlayer.y / map->getTileSize()) - 24; //subir player
+			int posplayery = (player->posPlayer.y / map->getTileSize()) - 23; //subir player
 			player->setPosition(glm::vec2(posplayerx * map->getTileSize(), posplayery * map->getTileSize()));
 			for (int i = 0;i < 1;i++) {
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if (player->posPlayer.y / map->getTileSize() == 48) player->posPlayer.y += 4; //player no puede salir de la habitacion
 	}
 	else if (stage == 2) { //segundo stage
 		if (ball->posBall.y / map->getTileSize() == 23 && ball->velBall.y < 0) { //sube hacia stage 3
@@ -142,6 +151,8 @@ void Scene::update(int deltaTime)
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if (player->posPlayer.y / map->getTileSize() == 24) player->posPlayer.y += 4; //player no puede salir de la habitacion
+		if ((player->posPlayer.y + player->sizePlayer.y) / map->getTileSize() == 48) player->posPlayer.y -= 4; //player no puede salir de la habitacion
 	}
 	else {
 		if (ball->posBall.y / map->getTileSize() == 24 && ball->velBall.y > 0) { //sube hacia stage 3
@@ -154,20 +165,45 @@ void Scene::update(int deltaTime)
 				projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 			}
 		}
+		if ((player->posPlayer.y + player->sizePlayer.y) / map->getTileSize() == 24) player->posPlayer.y -= 4; //player no puede salir de la habitacion
 
 
 	}
 
+	//mirar colision enemigo con player y mover enemigo
+	if (enemigoActivo) {
+		if (enemy->posEnemy.x < player->posPlayer.x) enemy->moveRight();
+		if (enemy->posEnemy.x > player->posPlayer.x) enemy->moveLeft();
+		if (enemy->posEnemy.y < player->posPlayer.y) enemy->moveDown();
+		if (enemy->posEnemy.y > player->posPlayer.y) enemy->moveUp();
 
+		if (CheckCollisionEnemyPlayer(*enemy, *player)) { //si el enemigo te toca
+			enemigoActivo = false;
+			--vidas;
+			enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize())); //reset enemigo
+			ball->isSticky = true;
+			if (stage == 1) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
+			}
+			else if (stage == 2) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES-24) * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES-24) * map->getTileSize()));
+			}
+			else if (stage == 3) {
+				player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), (INIT_PLAYER_Y_TILES - 48) * map->getTileSize()));
+				ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), (INIT_BALL_Y_TILES - 48) * map->getTileSize()));
+			}
+		}
+	}
 
 	//mirar si la bola se ha caido por el hueco
-	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == map->mapSize.y - 1) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
+	if ((ball->posBall.y + ball->sizeBall.y) / map->getTileSize() == 71) { //la bola toca el final del mapa, reseteamos ball y player y quitamos vida
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 		ball->isSticky = true;
-		//VIDAPLAYER - 1;
+		--vidas;
 	}
-
 
 	//mirar colision bola con player
 	if (ball->velBall.y > 0) { // si la bola baja
@@ -189,7 +225,7 @@ void Scene::update(int deltaTime)
 		}
 		
 	}
-
+	
 	//mirar colision de objetos con bola
 	bool choque = false;
 	for (int i = 0; i < bricks.size();i++) {
@@ -198,6 +234,7 @@ void Scene::update(int deltaTime)
 			if (colision.first) {
 				if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') { // si son ladrillos
 					bricks[i].colision();
+					puntuacion += bricks[i].points;
 					if (choque == false) { //caso colision con doble ladrillo
 						if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 						else ball->velBall.y *= -1; //colision vertical
@@ -205,7 +242,7 @@ void Scene::update(int deltaTime)
 					}
 				}
 				else { //cosas 
-					if (bricks[i].tipo == 'k') {
+					if (bricks[i].tipo == 'k') { //cojer llave
 						bricks[i].colision();
 						if (door == 1) { //primera llave abre primera puerta
 							for (int j = 0; j < bricks.size();j++) {
@@ -231,14 +268,49 @@ void Scene::update(int deltaTime)
 							choque = true;
 						}
 					}
+					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {//diamante o coin
+						bricks[i].colision();
+						dinero += bricks[i].points;
+						--loot;
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == 'x') { //atm
+						bricks[i].colision();
+						dinero = dinero + puntuacion;
+						puntuacion = 0;
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
+					if (bricks[i].tipo == 't') { //timbre o alarma
+						if (!enemigoActivo) { //si no esta el malo por ahi lo activamos
+							enemigoActivo = true;
+						}
+						if (choque == false) { //caso colision con doble ladrillo
+							if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
+							else ball->velBall.y *= -1; //colision vertical
+							choque = true;
+						}
+					}
 				}
 			}
 			
 		}
 	}
 
-	
+	//mirar condicion de victoria
+	if (loot == 0) {
+	}
+	//mirar condicion de derrota
+	if (vidas == 0) {
 
+	}
 }
 
 void Scene::render()
@@ -252,11 +324,13 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render(); //pintar mapa
-	
+
 	ball->render(); //pintar bola
+
 	for (int i = 0; i < bricks.size();i++) {
-		if(bricks[i].hp > 0) bricks[i].render();
+		if(bricks[i].hp > 0) bricks[i].render(); //pintar ladrillos y objetos
 	}
+	if(enemigoActivo)enemy->render();
 	player->render(); //pintar player
 }
 
@@ -334,6 +408,17 @@ pair<bool, pair<Direction, glm::ivec2>> Scene::CheckCollisionBallPlayer(Ball& on
 		return make_pair(GL_FALSE, make_pair(UP, glm::vec2(0, 0)));
 }
 
+bool Scene::CheckCollisionEnemyPlayer(Enemy &one, Player &two) // AABB - AABB collision
+{
+	// Collision x-axis?
+	bool collisionX = one.posEnemy.x + one.sizeEnemy.x >= two.posPlayer.x &&
+		two.posPlayer.x + two.sizePlayer.x >= one.posEnemy.x;
+	// Collision y-axis?
+	bool collisionY = one.posEnemy.y + one.sizeEnemy.y >= two.posPlayer.y &&
+		two.posPlayer.y + two.sizePlayer.y>= one.posEnemy.y;
+	// Collision only if on both axes
+	return collisionX && collisionY;
+}
 
 
 Direction Scene::VectorDirection(glm::vec2 target)

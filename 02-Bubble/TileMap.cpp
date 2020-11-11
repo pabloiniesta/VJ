@@ -110,6 +110,25 @@ bool TileMap::loadLevel(const string &levelFile)
 				brickInfo.push_back(make_pair('B', make_pair(i, j)));
 				map[j * mapSize.x + i] = 0;
 			}
+			else if (tile == 'd') {
+				++coins;
+				brickInfo.push_back(make_pair('d', make_pair(i, j)));
+				map[j * mapSize.x + i] = 0;
+			}
+			else if (tile == 'c') {
+				++coins;
+				brickInfo.push_back(make_pair('c', make_pair(i, j)));
+				map[j * mapSize.x + i] = 0;
+			}
+			else if (tile == 'x') {
+				++coins;
+				brickInfo.push_back(make_pair('x', make_pair(i, j)));
+				map[j * mapSize.x + i] = 0;
+			}
+			else if (tile == 't') {
+				brickInfo.push_back(make_pair('t', make_pair(i, j)));
+				map[j * mapSize.x + i] = 0;
+			}
 			else
 				map[j*mapSize.x+i] = tile - int('0');
 		}
