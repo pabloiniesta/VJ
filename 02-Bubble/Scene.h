@@ -20,14 +20,20 @@ enum Direction {
 	LEFT
 };
 
-void keyUp(unsigned char key, int x, int y);
 
 class Scene
 {
 
 public:
-	Scene();
-	~Scene();
+	Scene() {}
+
+
+	static Scene& instance()
+	{
+		static Scene S;
+
+		return S;
+	}
 
 	void init(int lvl);
 	void update(int deltaTime);

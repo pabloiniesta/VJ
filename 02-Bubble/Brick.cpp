@@ -82,7 +82,7 @@ void Brick::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cha
 		tipo = 't';
 		sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
 	}
-	else if (typebrick == '?') { //timbre, 1hp, activa al malo
+	else if (typebrick == '?') { //sorpresa, 1hp
 		spritesheet.loadFromFile("images/interrogante.png", TEXTURE_PIXEL_FORMAT_RGBA);
 		hp = 1;
 		points = 0;
@@ -116,10 +116,10 @@ void Brick::setPosition(const glm::vec2& pos)
 }
 
 void Brick::makegold(ShaderProgram& shaderProgram) {
-		spritesheet.loadFromFile("images/goldbrick.png", TEXTURE_PIXEL_FORMAT_RGBA);
-		sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
-		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
-		hp = 1;
-		points = 10;
-		tipo = 'o';
+	spritesheet.loadFromFile("images/goldbrick.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
+	hp = 1;
+	points = 10;
+	tipo = 'o';
 }

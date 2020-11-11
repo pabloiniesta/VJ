@@ -4,20 +4,20 @@ TILEMAP
 images/blocks.png 	-- Tilesheet
 2 2 								-- Number of tiles in tilesheet
 111111111111111111111111
-11t                   11
+11                    11
 11         x          11
 11                    11
+11         t          11
 11                    11
-11d c c         c c d 11
+11g g g g g g g g g g 11
+11d c d c d c d c d c 11
 11                    11
-11b b b         b b b 11
-11b b b r r r r b b b 11
+11g g g g g g g g g g 11
 11                    11
+11r r r r r r r r r r 11
+11d c d c d c d c d c 11
 11                    11
-11                    11
-11                    11
-11                    11
-11                    11
+11r r r r r r r r r r 11
 11                    11
 11                    11
 11                    11
@@ -32,15 +32,15 @@ images/blocks.png 	-- Tilesheet
 11                    11
 11                    11
 11                    11
-11         k          11
 11                    11
-11                    11
-11                    11
-11                    11
-11r r r g g g g r r r 11
-11r r r g  ?  g r r r 11
-11r r r g     g r r r 11
-11r r r g g g g r r r 11
+11r g b         b g r 11
+11 r g b       b g r  11
+11  r g b  k  b g r   11
+11   r g b   b g r    11
+11    r g b b g r     11
+11      r g g r       11
+11        r r         11
+11         r          11
 11                    11
 11                    11
 11                    11
@@ -55,15 +55,17 @@ images/blocks.png 	-- Tilesheet
 11                    11
 11                    11
 11                    11
-11         r          11
-11        r r         11
-11      r     r       11
-11    r         r     11
-11  r      k      r   11
-11    r         r     11
-11      r     r       11
-11        r r         11
-11         r          11
+11                    11
+11                    11
+11      b     b       11
+11g g r b r r b r g g 11
+11      b     b       11
+11      b     b       11
+11  ?   b     b   k   11
+11      b     b       11
+11      b     b       11
+11g g r b r r b r g g 11
+11      b     b       11
 11                    11
 11                    11
 11                    11
@@ -72,9 +74,7 @@ images/blocks.png 	-- Tilesheet
 11                    11
 11                    11
 11                    11
-11                    11
-11                    11
-11111111        11111111
+11      11111111      11
                                                             
                                     
                                     

@@ -6,7 +6,6 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <stdlib.h>
 
 using namespace std;
 
@@ -22,38 +21,35 @@ using namespace std;
 
 #define INITIAL_BALL_VELOCITY 3
 
-bool god; //modo dios
-bool skip; //sltar niveles
-
-Scene::Scene()
-{
-	map = NULL;
-	player = NULL;
-}
-
-Scene::~Scene()
-{
-	if(map != NULL)
-		delete map;
-	if(player != NULL)
-		delete player;
-}
+bool god; //godmode
+bool skip; //sltar pantalla
+bool next_level; //saltar nivelaz
 
 
 void Scene::init(int lvl) 
 {
+	if (map != NULL)
+		delete map;
+	if (player != NULL)
+		delete player;
+	if (ball != NULL)
+		delete ball;
+	if (enemy != NULL)
+		delete enemy;
+	if (!bricks.empty()) {
+		bricks.clear();
+	}
 	initShaders();
-	glutKeyboardUpFunc(keyUp);
 	
 	//cargar mapa con sus tiles
 	if (lvl == 1) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 2) {
-		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 3) {
-		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level04.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 
 	//cargar player con sus coordenadas de pantalla y atributos
@@ -71,8 +67,8 @@ void Scene::init(int lvl)
 	//cargar malo
 	enemy = new Enemy();
 	enemy->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
-	enemy->setTileMap(map);
 	enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize()));
+	enemy->setTileMap(map);
 	
 
 	//cargar ladrillos
@@ -92,19 +88,20 @@ void Scene::init(int lvl)
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
-	vidas = 5;
+	vidas = 2;
 	loot = 0;
 	god = false;
 	skip = false;
 	random = false;
 	gold = false;
+	next_level = false;
 	for (int i = 0; i < bricks.size();i++) { //contar loot
 		if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c')loot = loot + 1;
 	}
 	enemigoActivo = false;
 }
 
-void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
+/*void keyUp(unsigned char key, int x, int y) { //controla las releases de las teclas
 	if (key == 'a') {
 		if (!god)god = true;
 		else god = false;
@@ -112,7 +109,10 @@ void keyUp(unsigned char key, int x, int y) { //controla las releases de las tec
 	if (key == 's') {
 		if (!skip)skip = true;
 	}
-}
+	if (key == 'd') {
+		if (!next_level) next_level = true;
+	}
+}*/
 
 
 void Scene::update(int deltaTime)
@@ -123,12 +123,7 @@ void Scene::update(int deltaTime)
 	//actualizar bola
 	ball->update(deltaTime);
 
-	if (Game::instance().getKey(13)) {
-		
-		Game::instance().init();
-
-	}
-
+	/*
 	if (Game::instance().getKey(55)) { //MOVE UP
 		cameraYPos = cameraYPos+300 - (SCREEN_WIDTH - 1) / 2;
 		for(int i=0;i<1;i++){
@@ -146,9 +141,27 @@ void Scene::update(int deltaTime)
 		for (int i = 0;i < 1;i++) {
 			projection = glm::ortho(20.f, float(SCREEN_WIDTH - 150), float(cameraYPos + SCREEN_HEIGHT), cameraYPos + 80);
 		}
+	}*/
+
+	if (Game::instance().getKey(52)) { //4 -> saltar pantalla
+		if (Game::instance().getKey(52)) {
+			Game::instance().keyReleased(52);
+		}
+		if (Game::instance().getKey(52)) {
+			Game::instance().keyReleased(52);
+		}
+		skip = true;
 	}
-
-
+	if (Game::instance().getKey(53)) { // 5 -> god mode
+		if (Game::instance().getKey(53)) {
+			Game::instance().keyReleased(53);
+		}
+		if (Game::instance().getKey(53)) {
+			Game::instance().keyReleased(53);
+		}
+		if (god) god = false;
+			else god = true;
+	}
 	//saltar de pantalla
 	if (skip) {
 		ball->isSticky = true;
@@ -321,7 +334,7 @@ void Scene::update(int deltaTime)
 								if (bricks[j].hp > 0 && bricks[j].tipo == 'A') bricks[j].colision();
 							}
 						}
-						if (door == 3) { //segunda llave abre segunda puerta
+						if (door == 2) { //segunda llave abre segunda puerta
 							for (int j = 0; j < bricks.size();j++) {
 								if (bricks[j].hp > 0 && bricks[j].tipo == 'B') bricks[j].colision();
 							}
@@ -382,7 +395,7 @@ void Scene::update(int deltaTime)
 					if (bricks[i].tipo == '?') { //powerup misterioso
 						if (!random) {
 							bricks[i].colision();
-							int choice = 3;// +(rand() % 1);
+							int choice = 1 +(rand()% 3);
 
 							if (choice == 1) { //caso 1 spawnea enemigo
 								enemigoActivo = true;
@@ -438,7 +451,7 @@ void Scene::update(int deltaTime)
 	//pintar los ladrillos de oro
 	if (gold) {
 		for (int i = 0; i < bricks.size();i++) { //contar loot
-			if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') {
+			if (bricks[i].tipo == 'r'  || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') {
 				if (bricks[i].hp > 0) {
 					bricks[i].makegold(texProgram);
 				}
@@ -449,23 +462,19 @@ void Scene::update(int deltaTime)
 
 	//mirar condicion de victoria
 	
-	if (Game::instance().getKey(13)){
+	if (loot == 0 || Game::instance().getKey(54)){
+		if (Game::instance().getKey(54)) {
+			Game::instance().keyReleased(54);
+		}
+		if (Game::instance().getKey(54)) {
+			Game::instance().keyReleased(54);
+		}
 		if (Game::instance().getlevelAct() == 3){
 			Game::instance().winScreen(puntuacion, dinero);
 		}
 		else{
 			Game::instance().nextLevel(0);
-			char s[256];
-			sprintf(s, "%d", Game::instance().getlevelAct()); // 0,0,480,640
-			OutputDebugStringA((LPCSTR)s);
 		}
-	}
-	/*if (Game::instance().getKey(13)){ 
-		Game::instance().winScreen(puntuacion, dinero);
-	}*/
-
-	if (loot == 0){
-		//Game::instance().winScreen(puntuacion, dinero);
 	}
 
 	//mirar condicion de derrota
