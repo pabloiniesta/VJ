@@ -28,8 +28,7 @@ public:
 	Scene();
 	~Scene();
 
-	void init();
-	void show_menu();
+	void init(int lvl);
 	void update(int deltaTime);
 	void render();
 

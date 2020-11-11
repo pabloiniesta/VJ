@@ -134,9 +134,9 @@ void Text::render(const string& str, const glm::vec2& pixel, int size, const glm
 		pos.x += (float(size) / fontSize) * chars[str[i] - 32].ax;
 	}
 	glDisable(GL_BLEND);
-	char s[256];
-	sprintf(s, "%d", chars[str[0]]); // 0,0,480,640
-	OutputDebugStringA((LPCSTR)s);
+	//char s[256];
+	//sprintf(s, "%d", chars[str[0]]); // 0,0,480,640
+	//OutputDebugStringA((LPCSTR)s);
 }
 
 void Text::initShaders()

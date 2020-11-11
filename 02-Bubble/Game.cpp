@@ -17,7 +17,7 @@ void Game::init()
 	levelAct = MENU_LVL;
 	setMenuState();
 	MainMenu.init();
-	scene.init();
+	scene.init(1);
 	gui.init();
 }
 
@@ -60,29 +60,26 @@ void Game::nextLevel(int lvl) {
 	if (lvl == 0) {
 		++levelAct; //Go to next level
 		if (levelAct == 1) {//Num of total levels+1
-			scene.init();
-		}
-		else if (levelAct == 1) {
-			scene.init();
+			scene.init(1);
 		}
 		else if (levelAct == 2) {
-			//scene.init2();
+			scene.init(2);
 		}
 		else if (levelAct == 3) {
-			//scene.init3();
+			scene.init(3);
 		}
 	}
 	else if (lvl == 1) {
 		levelAct = 1;
-		scene.init();
+		scene.init(1);
 	}
 	else if (lvl == 2) {
 		levelAct = 2;
-		//scene.init2();
+		scene.init(2);
 	}
 	else if (lvl == 3) {
 		levelAct = 3;
-		//scene.init3();
+		scene.init(3);
 	}
 }
 

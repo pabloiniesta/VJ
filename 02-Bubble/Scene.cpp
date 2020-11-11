@@ -37,11 +37,19 @@ Scene::~Scene()
 }
 
 
-void Scene::init()
+void Scene::init(int lvl)
 {
 	initShaders();
 	//cargar mapa con sus tiles
-	map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	if (lvl == 1) {
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	}
+	else if (lvl == 2) {
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	}
+	else if (lvl == 3) {
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	}
 
 	//cargar player con sus coordenadas de pantalla y atributos
 	player = new Player();
@@ -305,21 +313,24 @@ void Scene::update(int deltaTime)
 	}
 
 	//mirar condicion de victoria
-	/*Esto debería ser: 
-	if (loot = 0){
-		if (Game::instance().getLevelAct==3){
+	
+	if (Game::instance().getKey(13)){
+		if (Game::instance().getlevelAct() == 3){
 			Game::instance().winScreen(puntuacion, dinero);
 		}
 		else{
 			Game::instance().nextLevel(0);
+			char s[256];
+			sprintf(s, "%d", Game::instance().getlevelAct()); // 0,0,480,640
+			OutputDebugStringA((LPCSTR)s);
 		}
-	}*/
-	if (Game::instance().getKey(13)){ 
-		Game::instance().winScreen(puntuacion, dinero);
 	}
+	/*if (Game::instance().getKey(13)){ 
+		Game::instance().winScreen(puntuacion, dinero);
+	}*/
 
 	else if (loot == 0) {
-		Game::instance().nextLevel();
+		Game::instance().nextLevel(0);
 	}
 
 	//mirar condicion de derrota
