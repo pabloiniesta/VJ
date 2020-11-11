@@ -63,13 +63,14 @@ void GUI::render() {
 	//Texts
 	int vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
-	//cout << vp[0] << " " << vp[1] << " " << vp[2] << " " << vp[3] << endl;
-	OutputDebugstd::to_string(vp[0])
+	//char s[256];
+	//sprintf(s, "VP[1]=%d, VP[2]=%d, VP[3]=%d, VP[4]=%d", vp[0], vp[1], vp[2], vp[3]); // 0,0,480,640
+	//OutputDebugStringA((LPCSTR)s);
 	int screen_height = vp[3] - vp[1];
 	int screen_width = vp[2] - vp[0];
-	int gui_height = screen_height / 5;
-	int hab_size = gui_height / 3 < screen_width / 15 ? gui_height / 3 : screen_width / 15;
-	scoreText.render("Score: " + std::to_string(scoreAct), glm::vec2(screen_width * 0.2f, screen_height - gui_height / 2 + hab_size / 2), hab_size, glm::vec4(0, 0, 0, 1));
+	int gui_height = screen_height;
+	int hab_size = 15;
+	scoreText.render("Score: 99999", glm::vec2(screen_width * 0.2f, screen_height - gui_height / 2 + hab_size / 2), hab_size, glm::vec4(0, 0, 0, 1));
 
 }
 

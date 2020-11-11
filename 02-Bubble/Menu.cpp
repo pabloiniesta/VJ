@@ -115,7 +115,7 @@ void Menu::render() {
 	}
 	else { //Main menu screen
 		mainTextureQuad->render(mainTexture);
-		testText.render("999999", glm::vec2(.0f, .0f), 25.0f, glm::vec4(0.5, 0.8f, 0.2f, 1.0f));d
+		testText.render("999999", glm::vec2(.0f, .0f), 25.0f, glm::vec4(0.5, 0.8f, 0.2f, 1.0f));
 	}
 }
 
