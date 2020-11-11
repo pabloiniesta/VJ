@@ -14,6 +14,7 @@ void Game::init()
 	bPlay = true;
 	state = 1;
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	levelAct = MENU_LVL;
 	setMenuState();
 	MainMenu.init();
 	scene.init();
@@ -51,14 +52,48 @@ void Game::render()
 	}
 }
 
-void Game::nextLevel() {
-	//++levelAct; //Go to next level
-	levelAct = 1;
-	if (levelAct == 1) {//Num of total levels+1
+int Game::getlevelAct() {
+	return levelAct;
+}
+
+void Game::nextLevel(int lvl) {
+	if (lvl == 0) {
+		++levelAct; //Go to next level
+		if (levelAct == 1) {//Num of total levels+1
+			scene.init();
+		}
+		else if (levelAct == 1) {
+			scene.init();
+		}
+		else if (levelAct == 2) {
+			//scene.init2();
+		}
+		else if (levelAct == 3) {
+			//scene.init3();
+		}
+	}
+	else if (lvl == 1) {
+		levelAct = 1;
 		scene.init();
 	}
-	else {
+	else if (lvl == 2) {
+		levelAct = 2;
+		//scene.init2();
 	}
+	else if (lvl == 3) {
+		levelAct = 3;
+		//scene.init3();
+	}
+}
+
+void Game::winScreen(int score, int money) {
+	setMenuState();
+	MainMenu.activateWin(score,money);
+}
+
+void Game::loseScreen(int score) {
+	setMenuState();
+	MainMenu.activateGameOver(score);
 }
 
 

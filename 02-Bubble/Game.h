@@ -32,7 +32,10 @@ public:
 	void setMenuState();
 	bool update(int deltaTime);
 	void render();
-	void nextLevel();
+	int getlevelAct();
+	void nextLevel(int lvl);
+	void winScreen(int score, int money);
+	void loseScreen(int score);
 	void state_handler(int prev_state, int fut_state);
 	
 	// Input callback methods

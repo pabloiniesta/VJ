@@ -305,11 +305,26 @@ void Scene::update(int deltaTime)
 	}
 
 	//mirar condicion de victoria
-	if (loot == 0) {
+	/*Esto debería ser: 
+	if (loot = 0){
+		if (Game::instance().getLevelAct==3){
+			Game::instance().winScreen(puntuacion, dinero);
+		}
+		else{
+			Game::instance().nextLevel(0);
+		}
+	}*/
+	if (Game::instance().getKey(13)){ 
+		Game::instance().winScreen(puntuacion, dinero);
 	}
+
+	else if (loot == 0) {
+		Game::instance().nextLevel();
+	}
+
 	//mirar condicion de derrota
 	if (vidas == 0) {
-
+		Game::instance().loseScreen(puntuacion);
 	}
 }
 

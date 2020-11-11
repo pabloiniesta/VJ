@@ -23,7 +23,7 @@ void Menu::init() {
 	bCredits = false;
 	bInstructions = false;
 	bGameOver = false;
-	bNewRecord = false;
+	bWin = false;
 
 	//Shader
 	initShaders();
@@ -44,6 +44,12 @@ void Menu::init() {
 	creditsQuad = TexturedQuad::createTexturedQuad(geomGUI, texCoords, texProgram);
 	creditsTex.loadFromFile("images/credits.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
+	youWinQuad = TexturedQuad::createTexturedQuad(geomGUI, texCoords, texProgram);
+	winTex.loadFromFile("images/youwin.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+	youLoseQuad = TexturedQuad::createTexturedQuad(geomGUI, texCoords, texProgram);
+	loseTex.loadFromFile("images/youlose.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
 	if (!testText.init("fonts/OpenSans-Bold.ttf")) {
 		OutputDebugStringW(L"Error FT");
 	}
@@ -58,6 +64,10 @@ void Menu::update(int deltaTime) {
 			bInstructions = false; //Exit instructions screen
 		else if (bCredits) //If at Credits screen
 			bCredits = false; //Exit instructions screen
+		else if (bGameOver) //If at Credits screen
+			bGameOver = false; //Exit instructions screen
+		else if (bWin) //If at Credits screen
+			bWin = false; //Exit instructions screen
 	}
 	else { //Main menu screen
 		if (Game::instance().getKey(49)) { //Input 1 - Start
@@ -87,14 +97,12 @@ void Menu::render() {
 	texProgram.setUniformMatrix4f("modelview", modelview);
 
 	mainTextureQuad->render(mainTexture);
-	//    logoTextureQuad->render(logoTexture);
-
 	int vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
 	int screen_height = vp[3] - vp[1];
 	int screen_width = vp[2] - vp[0];
 	int text_size = min(screen_height / 8, screen_width / 8); //Value that makes the text to fit better on background
-
+	
 //    scoreText.render("", glm::vec2(10, text_size), text_size, glm::vec4(1, 1, 1, 1));
 
 	if (bInstructions) {//At instructions screen
@@ -107,26 +115,27 @@ void Menu::render() {
 	}
 	else if (bGameOver) {
 		//render game over
-		gameOverQuad->render(gameOverTex);
+		youLoseQuad->render(loseTex);
 	}
-	else if (bNewRecord) {
-		winQuad->render(winTex);
+	else if (bWin) {
+		youWinQuad->render(winTex);
 		//scoreText.render(std::to_string(lastScore), glm::vec2(280, 260), text_size, glm::vec4(0, 0, 0, 1));
 	}
 	else { //Main menu screen
 		mainTextureQuad->render(mainTexture);
-		testText.render("999999", glm::vec2(.0f, .0f), 25.0f, glm::vec4(0.5, 0.8f, 0.2f, 1.0f));
 	}
 }
 
 
-void Menu::activateGameOver() {
+void Menu::activateGameOver(int score) {
 	bGameOver = true;
+	resScore = score;
 }
 
-void Menu::activateNewRecord(int score) {
-	bNewRecord = true;
-	lastScore = score;
+void Menu::activateWin(int score, int money) {
+	bWin = true;
+	resScore = score;
+	resMoney = money;
 }
 
 

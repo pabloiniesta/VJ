@@ -15,8 +15,8 @@ public:
 	void init();
 	void update(int deltaTime);
 	void render();
-
-	void activateGameOver();
+	void activateWin(int score, int money);
+	void activateGameOver(int score);
 	void activateNewRecord(int score);
 
 	void setInstructions(bool value) { bInstructions = value; }
@@ -35,6 +35,7 @@ private:
 	int index;
 	int numOptions;
 	bool bUpPressed, bDownPressed, bEnterPressed;
+	int resMoney, resScore;
 
 
 	TexturedQuad* instructionsQuad; //Instructions Background
@@ -43,16 +44,16 @@ private:
 	TexturedQuad* creditsQuad; //Credits Background
 	Texture creditsTex;
 
-	TexturedQuad* gameOverQuad; //Game over Background
-	Texture gameOverTex;
+	TexturedQuad* youLoseQuad; //Game over Background
+	Texture loseTex;
 
-	TexturedQuad* winQuad; //Game over Background
+	TexturedQuad* youWinQuad; //Game over Background
 	Texture winTex;
 
 	int lastScore;
 	bool bCredits; //Go to credits screen
 	bool bInstructions; //Go to instructions scree
 	bool bGameOver; //Go to game over screen
-	bool bNewRecord; //go to record screen with possibility with adding new record
+	bool bWin;
 	Text testText;
 };
