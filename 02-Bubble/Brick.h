@@ -17,6 +17,7 @@ public:
 	void setPosition(const glm::vec2& pos);
 
 	void makegold(ShaderProgram& shaderProgram);
+	void breakbrick(ShaderProgram& shaderProgram);
 
 	glm::ivec2 posBrick;
 	glm::ivec2 sizeBrick;

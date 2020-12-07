@@ -28,13 +28,17 @@ public:
 		return G;
 	}
 	
+	void playSound(const char * path, bool loop);
+
+	void stopSounds();
+	void actualizarGui(int money, int score, int vidas, int stage);
 	void init();
 	void setMenuState();
 	bool update(int deltaTime);
 	void render();
 	int getlevelAct();
-	void nextLevel(int lvl);
-	void winScreen(int score, int money);
+	void nextLevel(int lvl, int score, int money);
+	void winScreen();
 	void loseScreen(int score);
 	void state_handler(int prev_state, int fut_state);
 	
@@ -52,7 +56,6 @@ public:
 
 private:
 	bool bPlay;                       // Continue to play game?
-	Scene scene;                      // Scene to render
 	bool keys[256], specialKeys[256]; // Store key states so that 
 	                                  // we can have access at any time
 	int state;						  // 1 = menu, 2 = instructions, 3 = credits, 4 = play
@@ -61,6 +64,8 @@ private:
 	int levelAct;
 	int scoreAct;
 	int lifesAct;
+	int scoretotal;
+	int moneytotal;
 };
 
 

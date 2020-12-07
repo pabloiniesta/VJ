@@ -90,6 +90,14 @@ void Brick::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram, cha
 		tipo = '?';
 		sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
 	}
+	else if (typebrick == 'm') { //moneda que cae, 1hp
+		spritesheet.loadFromFile("images/centavo.png", TEXTURE_PIXEL_FORMAT_RGBA);
+		hp = 1;
+		points = 5;
+		sizeBrick = glm::ivec2(16, 16);
+		tipo = 'm';
+		sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+	}
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
 }
@@ -109,6 +117,8 @@ void Brick::colision()
 	this->hp -= 1;
 }
 
+
+
 void Brick::setPosition(const glm::vec2& pos)
 {
 	posBrick = pos;
@@ -122,4 +132,25 @@ void Brick::makegold(ShaderProgram& shaderProgram) {
 	hp = 1;
 	points = 10;
 	tipo = 'o';
+}
+
+void Brick::breakbrick(ShaderProgram& shaderProgram)
+{
+	if (tipo == 'g') {
+		spritesheet.loadFromFile("images/greenbrickbreak1.png", TEXTURE_PIXEL_FORMAT_RGBA);
+		sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
+	}
+	else if (tipo == 'b') {
+		if (hp == 2) {
+			spritesheet.loadFromFile("images/bluebrickbreak1.png", TEXTURE_PIXEL_FORMAT_RGBA);
+			sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+			sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
+		}
+		if (hp == 1){
+			spritesheet.loadFromFile("images/bluebrickbreak2.png", TEXTURE_PIXEL_FORMAT_RGBA);
+			sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1.f, 1.f), &spritesheet, &shaderProgram);
+			sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBrick.x), float(tileMapDispl.y + posBrick.y)));
+		}
+	}
 }

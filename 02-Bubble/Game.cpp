@@ -5,36 +5,53 @@
 #include <iostream>
 #include "Texture.h"
 #include "Constants.h"
+#include "Scene.h"
+#include <irrKlang.h>
 
 using namespace std;
+using namespace irrklang;
 
-//HOL1
+ISoundEngine* SoundEngine = createIrrKlangDevice();
+
+void Game::playSound(const char*path, bool loop) {
+	SoundEngine->play2D(path, loop);
+}
+
+void Game::stopSounds() {
+	SoundEngine->stopAllSounds();
+}
+
+
+
 void Game::init()
 {
 	bPlay = true;
 	state = 1;
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-	levelAct = MENU_LVL;
 	setMenuState();
 	MainMenu.init();
-	scene.init(1);
+	Scene::instance().init(1);
 	gui.init();
+	SoundEngine->play2D("sounds/menu.mp3", true);
+	scoretotal = 0;
+	moneytotal = 0;
 }
 
 void Game::setMenuState() {
 	levelAct = MENU_LVL;
 	scoreAct = 0;
 	lifesAct = 3; //Init number of lifes
-	//mSoundHelper->playMusic("sounds/menu.wav");
+	//mSound->playMusic("sounds/menu.wav");
 }
-
+void Game::actualizarGui(int money, int score, int vidas, int stage) {
+	gui.actualizarGui(money, score, vidas, stage, levelAct);
+}
 bool Game::update(int deltaTime) {
 	if (levelAct == MENU_LVL) {  //Main menu
-
 		MainMenu.update(deltaTime);
 	}
 	else {
-		scene.update(deltaTime);
+		Scene::instance().update(deltaTime);
 	}
 	return bPlay;
 }
@@ -46,8 +63,16 @@ void Game::render()
 	if (levelAct == MENU_LVL) { //Main menu
 		MainMenu.render();
 	}
-	else {
-		scene.render();
+	else if(levelAct == 1){
+		Scene::instance().render();
+		gui.render();
+	}
+	else if (levelAct == 2) {
+		Scene::instance().render();
+		gui.render();
+	}
+	else if (levelAct == 3) {
+		Scene::instance().render();
 		gui.render();
 	}
 }
@@ -56,41 +81,41 @@ int Game::getlevelAct() {
 	return levelAct;
 }
 
-void Game::nextLevel(int lvl) {
+void Game::nextLevel(int lvl, int score, int money) {
+	scoretotal += score;
+	moneytotal += money;
 	if (lvl == 0) {
 		++levelAct; //Go to next level
 		if (levelAct == 1) {//Num of total levels+1
-			scene.init(1);
+			SoundEngine->stopAllSounds();
+			SoundEngine->play2D("sounds/background.mp3", true);
+			OutputDebugStringW(L"LEVEL1");
+			Scene::instance().init(1);
 		}
 		else if (levelAct == 2) {
-			scene.init(2);
+			OutputDebugStringW(L"LEVEL2");
+			Scene::instance().init(2);
 		}
 		else if (levelAct == 3) {
-			scene.init(3);
+			OutputDebugStringW(L"LEVEL3");
+			Scene::instance().init(3);
 		}
-	}
-	else if (lvl == 1) {
-		levelAct = 1;
-		scene.init(1);
-	}
-	else if (lvl == 2) {
-		levelAct = 2;
-		scene.init(2);
-	}
-	else if (lvl == 3) {
-		levelAct = 3;
-		scene.init(3);
 	}
 }
 
-void Game::winScreen(int score, int money) {
+void Game::winScreen() {
 	setMenuState();
-	MainMenu.activateWin(score,money);
+	MainMenu.activateWin(scoretotal,moneytotal);
+	scoretotal = 0;
+	moneytotal = 0;
 }
 
 void Game::loseScreen(int score) {
+	scoretotal += score;
 	setMenuState();
-	MainMenu.activateGameOver(score);
+	MainMenu.activateGameOver(scoretotal);
+	scoretotal = 0;
+	moneytotal = 0;
 }
 
 

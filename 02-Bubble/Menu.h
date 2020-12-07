@@ -17,13 +17,14 @@ public:
 	void render();
 	void activateWin(int score, int money);
 	void activateGameOver(int score);
-	void activateNewRecord(int score);
-
 	void setInstructions(bool value) { bInstructions = value; }
+	void calcularTexScore(int score);
+	void calcularTexMoney(int money);
 
 
 private:
 	void initShaders();
+	Texture asignarnum(int num);
 
 private:
 	ShaderProgram texProgram;
@@ -49,6 +50,39 @@ private:
 
 	TexturedQuad* youWinQuad; //Game over Background
 	Texture winTex;
+
+	//Money
+	TexturedQuad* moneyTexQuad1;
+	Texture moneyTexture1;
+	TexturedQuad* moneyTexQuad2;
+	Texture moneyTexture2;
+	TexturedQuad* moneyTexQuad3;
+	Texture moneyTexture3;
+	TexturedQuad* moneyTexQuad4;
+	Texture moneyTexture4;
+
+	//Score
+	TexturedQuad* scoreTexQuad1;
+	Texture scoreTexture1;
+	TexturedQuad* scoreTexQuad2;
+	Texture scoreTexture2;
+	TexturedQuad* scoreTexQuad3;
+	Texture scoreTexture3;
+	TexturedQuad* scoreTexQuad4;
+	Texture scoreTexture4;
+
+	//texturas de numeros
+	Texture cero;
+	Texture uno;
+	Texture dos;
+	Texture tres;
+	Texture cuatro;
+	Texture cinco;
+	Texture seis;
+	Texture siete;
+	Texture ocho;
+	Texture nueve;
+
 
 	int lastScore;
 	bool bCredits; //Go to credits screen

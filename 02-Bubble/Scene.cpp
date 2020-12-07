@@ -6,6 +6,10 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <cstdlib>
+#include <ctime>
+#include <irrKlang.h>
+using namespace irrklang;
 
 using namespace std;
 
@@ -26,6 +30,7 @@ bool skip; //sltar pantalla
 bool next_level; //saltar nivelaz
 
 
+
 void Scene::init(int lvl) 
 {
 	if (map != NULL)
@@ -39,17 +44,20 @@ void Scene::init(int lvl)
 	if (!bricks.empty()) {
 		bricks.clear();
 	}
+	if (!coinrain.empty()) {
+		coinrain.clear();
+	}
 	initShaders();
 	
 	//cargar mapa con sus tiles
 	if (lvl == 1) {
-		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 2) {
-		map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 	else if (lvl == 3) {
-		map = TileMap::createTileMap("levels/level04.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+		map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	}
 
 	//cargar player con sus coordenadas de pantalla y atributos
@@ -88,15 +96,27 @@ void Scene::init(int lvl)
 	currentTime = 0.0f;
 	stage = 1;
 	door = 1;
-	vidas = 2;
+	vidas = 5;
 	loot = 0;
 	god = false;
 	skip = false;
 	random = false;
+	rain = false;
+	srand(time(NULL));
+	choice = (rand() % 4) + 1;
 	gold = false;
 	next_level = false;
+	puntuacion = 0;
+	dinero = 0;
 	for (int i = 0; i < bricks.size();i++) { //contar loot
 		if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c')loot = loot + 1;
+	}
+	for (int i = 0; i < 50;i++) { //iniciar coin rain
+		Brick* brick = new Brick();
+		brick->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, 'm'); //creamos el Brick moneda
+		int posx = 2 + (rand() % 19);
+		brick->setPosition(glm::vec2(posx * map->getTileSize(), -i * map->getTileSize())); //le damos su posicion en el mapa
+		coinrain.push_back(*brick);
 	}
 	enemigoActivo = false;
 }
@@ -198,6 +218,7 @@ void Scene::update(int deltaTime)
 	//control de camara dependiendo de la stage y bola
 	if (stage == 1) { //primer stage
 		if (ball->posBall.y / map->getTileSize() == 47 && ball->velBall.y < 0) { //sube stage 2
+			Game::instance().playSound("sounds/screenup.wav", false);
 			cameraYPos = SCREEN_HEIGHT - 175;
 			stage = 2;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
@@ -211,6 +232,7 @@ void Scene::update(int deltaTime)
 	}
 	else if (stage == 2) { //segundo stage
 		if (ball->posBall.y / map->getTileSize() == 23 && ball->velBall.y < 0) { //sube hacia stage 3
+			Game::instance().playSound("sounds/screenup.wav", false);
 			cameraYPos = SCREEN_HEIGHT - 550;
 			stage = 3;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
@@ -221,6 +243,7 @@ void Scene::update(int deltaTime)
 			}
 		}
 		if (ball->posBall.y / map->getTileSize() == 48 && ball->velBall.y > 0) { //baja a stage 1 
+			Game::instance().playSound("sounds/screendown.wav", false);
 			cameraYPos = SCREEN_HEIGHT + 223;
 			stage = 1;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
@@ -235,6 +258,7 @@ void Scene::update(int deltaTime)
 	}
 	else {
 		if (ball->posBall.y / map->getTileSize() == 24 && ball->velBall.y > 0) { //sube hacia stage 3
+			Game::instance().playSound("sounds/screendown.wav", false);
 			cameraYPos = SCREEN_HEIGHT - 175;
 			stage = 2;
 			int posplayerx = (player->posPlayer.x / map->getTileSize());
@@ -258,6 +282,7 @@ void Scene::update(int deltaTime)
 
 		if (CheckCollisionEnemyPlayer(*enemy, *player)) { //si el enemigo te toca
 			enemigoActivo = false;
+			Game::instance().playSound("sounds/policehits.wav", false);
 			if(!god)--vidas;
 			enemy->setPosition(glm::vec2(0 * map->getTileSize(), 0 * map->getTileSize())); //reset enemigo
 			ball->isSticky = true;
@@ -281,7 +306,10 @@ void Scene::update(int deltaTime)
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		ball->setPosition(glm::vec2(INIT_BALL_X_TILES * map->getTileSize(), INIT_BALL_Y_TILES * map->getTileSize()));
 		ball->isSticky = true;
-		if (!god)--vidas;
+		if (!god) {
+			--vidas;
+			Game::instance().playSound("sounds/loselife.wav", false);
+		}
 	}
 
 	//mirar colision bola con player
@@ -289,6 +317,7 @@ void Scene::update(int deltaTime)
 		// NO TOCAR NADA A PARTIR DE AQUI O MUERTE
 		pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallPlayer(*ball, *player);
 		if (colision.first) { //la bola toca al player. si actualizas la velY con un float el juego se muere, solo act velX en funcion de la colision
+			Game::instance().playSound("sounds/player.wav", false);
 			if (god) {
 				ball->velBall.x = 0;
 				ball->velBall.y *= -1;
@@ -318,8 +347,10 @@ void Scene::update(int deltaTime)
 			pair<bool, pair<Direction, glm::ivec2>> colision = CheckCollisionBallObject(*ball, bricks[i]);
 			if (colision.first) {
 				if (bricks[i].tipo == 'r' || bricks[i].tipo == 'g' || bricks[i].tipo == 'b') { // si son ladrillos
+					Game::instance().playSound("sounds/brick2.wav", false);
+					if(bricks[i].hp == 1)puntuacion += bricks[i].points;
 					bricks[i].colision();
-					puntuacion += bricks[i].points;
+					bricks[i].breakbrick(texProgram);
 					if (choque == false) { //caso colision con doble ladrillo
 						if (colision.second.first == LEFT || colision.second.first == RIGHT) ball->velBall.x *= -1; //colision horizontal 
 						else ball->velBall.y *= -1; //colision vertical
@@ -328,6 +359,7 @@ void Scene::update(int deltaTime)
 				}
 				else { //cosas 
 					if (bricks[i].tipo == 'k') { //cojer llave
+						Game::instance().playSound("sounds/key.wav", false);
 						bricks[i].colision();
 						if (door == 1) { //primera llave abre primera puerta
 							for (int j = 0; j < bricks.size();j++) {
@@ -354,6 +386,8 @@ void Scene::update(int deltaTime)
 						}
 					}
 					if (bricks[i].tipo == 'd' || bricks[i].tipo == 'c') {//diamante o coin
+						if (bricks[i].tipo == 'd') Game::instance().playSound("sounds/diamond.wav", false);
+						else Game::instance().playSound("sounds/coin.wav", false);
 						bricks[i].colision();
 						dinero += bricks[i].points;
 						if (choque == false) { //caso colision con doble ladrillo
@@ -364,6 +398,7 @@ void Scene::update(int deltaTime)
 						loot = loot - 1;
 					}
 					if (bricks[i].tipo == 'x') { //atm
+						Game::instance().playSound("sounds/atm.wav", false);
 						bricks[i].colision();
 						dinero = dinero + puntuacion;
 						puntuacion = 0;
@@ -375,6 +410,7 @@ void Scene::update(int deltaTime)
 					}
 					if (bricks[i].tipo == 't') { //timbre o alarma
 						if (!enemigoActivo) { //si no esta el malo por ahi lo activamos
+							Game::instance().playSound("sounds/alarm.wav", false);
 							enemigoActivo = true;
 						}
 						if (choque == false) { //caso colision con doble ladrillo
@@ -384,6 +420,7 @@ void Scene::update(int deltaTime)
 						}
 					}
 					if (bricks[i].tipo == 'o') { //brick de oro
+						Game::instance().playSound("sounds/brick1.wav", false);
 						bricks[i].colision();
 						dinero += bricks[i].points;
 						if (choque == false) { //caso colision con doble ladrillo
@@ -393,19 +430,18 @@ void Scene::update(int deltaTime)
 						}
 					}
 					if (bricks[i].tipo == '?') { //powerup misterioso
+						Game::instance().playSound("sounds/interrogant.wav", false);
 						if (!random) {
 							bricks[i].colision();
-							int choice = 1 +(rand()% 3);
-
 							if (choice == 1) { //caso 1 spawnea enemigo
 								enemigoActivo = true;
 								enemy->setPosition(glm::vec2(bricks[i].posBrick.x, bricks[i].posBrick.y));
 								random = true;
 							}
-
 							if (choice == 2) { //tirar hacia atras
 								if (stage == 1) puntuacion += 100; //si estas abajo del todo te da puntos
 								if (stage == 2) { //si stage 2 saltas hacia abajo
+									Game::instance().playSound("sounds/nelson.mp3", false);
 									random = true;
 									cameraYPos = SCREEN_HEIGHT + 223;
 									stage = 1;
@@ -416,6 +452,7 @@ void Scene::update(int deltaTime)
 									}
 								}
 								if (stage == 3) {
+									Game::instance().playSound("sounds/nelson.mp3", false);
 									random = true;
 									cameraYPos = SCREEN_HEIGHT - 175;
 									stage = 2;
@@ -431,7 +468,8 @@ void Scene::update(int deltaTime)
 								gold = true;
 							}
 							if (choice == 4) {
-
+								rain = true;
+								Game::instance().playSound("sounds/herecomesthemoney.mp3", false);
 							}
 
 							if (choque == false) { //caso colision con doble ladrillo
@@ -448,6 +486,23 @@ void Scene::update(int deltaTime)
 		}
 	}
 
+	//activar lluvia de monedas
+	if (rain) {
+		for (int i = 0; i < coinrain.size();i++) {
+			if (coinrain[i].hp > 0) {
+				coinrain[i].posBrick.y += 1;
+				coinrain[i].setPosition(glm::vec2(coinrain[i].posBrick.x, coinrain[i].posBrick.y));
+				bool colision = CheckCollisionBrickPlayer(coinrain[i], *player);
+				if (colision) {
+					Game::instance().playSound("sounds/coin.wav", false);
+					colision = false;
+					dinero += coinrain[i].points;
+					coinrain[i].colision();
+				}
+			}
+		}
+	}
+
 	//pintar los ladrillos de oro
 	if (gold) {
 		for (int i = 0; i < bricks.size();i++) { //contar loot
@@ -460,6 +515,7 @@ void Scene::update(int deltaTime)
 		gold = false;
 	}
 
+	Game::instance().actualizarGui(dinero, puntuacion, vidas, stage);
 	//mirar condicion de victoria
 	
 	if (loot == 0 || Game::instance().getKey(54)){
@@ -470,10 +526,10 @@ void Scene::update(int deltaTime)
 			Game::instance().keyReleased(54);
 		}
 		if (Game::instance().getlevelAct() == 3){
-			Game::instance().winScreen(puntuacion, dinero);
+			Game::instance().winScreen();
 		}
 		else{
-			Game::instance().nextLevel(0);
+			Game::instance().nextLevel(0, puntuacion, dinero);
 		}
 	}
 
@@ -503,6 +559,11 @@ void Scene::render()
 				if (random == false)bricks[i].render();
 			}
 			else bricks[i].render(); //pintar ladrillos y objetos
+		}
+	}
+	for (int i = 0; i < coinrain.size();i++) {
+		if (coinrain[i].hp > 0 && rain) {
+			coinrain[i].render();
 		}
 	}
 	if(enemigoActivo)enemy->render();
@@ -616,4 +677,16 @@ Direction Scene::VectorDirection(glm::vec2 target)
 		}
 	}
 	return (Direction)best_match;
+}
+
+bool Scene::CheckCollisionBrickPlayer(Brick& one, Player& two)
+{
+	// Collision x-axis?
+	bool collisionX = one.posBrick.x + one.sizeBrick.x >= two.posPlayer.x &&
+		two.posPlayer.x + two.sizePlayer.x >= one.posBrick.x;
+	// Collision y-axis?
+	bool collisionY = one.posBrick.y + one.sizeBrick.y >= two.posPlayer.y &&
+		two.posPlayer.y + two.sizePlayer.y >= one.posBrick.y;
+	// Collision only if on both axes
+	return collisionX && collisionY;
 }

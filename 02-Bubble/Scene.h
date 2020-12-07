@@ -51,6 +51,10 @@ private:
 	float currentTime;
 	glm::mat4 projection;
 	vector<Brick> bricks;
+	vector<Brick> coinrain;
+	bool CheckCollisionBrickPlayer(Brick& one, Player& two);
+	bool rain;
+	int choice;
 	float cameraYPos;
 	int stage;
 	int door;
